@@ -243,7 +243,7 @@ class FixedAncillaryDataService:
     test_mode: ETestMode = bpack.field(
         size=3, offset=73, default=ETestMode.default
     )
-    rx_channel_id: ERxChannelId = bpack.field(size=4, default=ERxChannelId.RxV)
+    rx_channel_id: ERxChannelId = bpack.field(size=4, default=ERxChannelId.rxv)
     instrument_configuration_id: T["u32"] = 0  # NOTE: the data type is TBD
 
 
@@ -260,7 +260,7 @@ class SubCommutatedAncillaryDataService:
 
 
 @bpack.bs.decoder
-@bpack.descriptor(baseunits=BITS, byteorder=BE, size=352)
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
 class PVTAncillatyData:
     """Position Velocity Time (PVT) Ancillary Data.
 
@@ -278,7 +278,7 @@ class PVTAncillatyData:
 
 
 @bpack.bs.decoder
-@bpack.descriptor(baseunits=BITS, byteorder=BE, size=304)
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
 class PointingStatus:
     """Pointing Status (S1-IF-ASD-PL-0007, table 3.2-8)."""
 
@@ -289,7 +289,7 @@ class PointingStatus:
 
 
 @bpack.bs.decoder
-@bpack.descriptor(baseunits=BITS, byteorder=BE, size=304)
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
 class AttitudeAncillatyData:
     """Attitude Ancillary Data (S1-IF-ASD-PL-0007, table 3.2-6)."""
 
@@ -301,14 +301,14 @@ class AttitudeAncillatyData:
     omega_y: T["f32"] = 0
     omega_z: T["f32"] = 0
     # time_stamp provided in yocto seconds (1e-24 s)
-    time_stamp: T["u56"] = bpack.field(dafault=0, offset=232)
+    time_stamp: T["u56"] = bpack.field(default=0, offset=232)
     pointing_status: PointingStatus = bpack.field(
-        dafault_factory=PointingStatus
+        default_factory=PointingStatus
     )
 
 
 @bpack.bs.decoder
-@bpack.descriptor(baseunits=BITS, byteorder=BE, size=368)
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
 class HKTemperatureAncillatyData:
     """Antenna and TGU temperature HouseKeeping Data.
 
@@ -317,63 +317,63 @@ class HKTemperatureAncillatyData:
 
     temperature_update_status: T["u16"] = 0
 
-    Tile1_EFEH_temperature: T["u16"] = 0
-    Tile1_EFEV_temperature: T["u16"] = 0
-    Tile1_TA_temperature: T["u16"] = 0
+    Tile1_EFEH_temperature: T["u8"] = 0
+    Tile1_EFEV_temperature: T["u8"] = 0
+    Tile1_TA_temperature: T["u8"] = 0
 
-    Tile2_EFEH_temperature: T["u16"] = 0
-    Tile2_EFEV_temperature: T["u16"] = 0
-    Tile2_TA_temperature: T["u16"] = 0
+    Tile2_EFEH_temperature: T["u8"] = 0
+    Tile2_EFEV_temperature: T["u8"] = 0
+    Tile2_TA_temperature: T["u8"] = 0
 
-    Tile3_EFEH_temperature: T["u16"] = 0
-    Tile3_EFEV_temperature: T["u16"] = 0
-    Tile3_TA_temperature: T["u16"] = 0
+    Tile3_EFEH_temperature: T["u8"] = 0
+    Tile3_EFEV_temperature: T["u8"] = 0
+    Tile3_TA_temperature: T["u8"] = 0
 
-    Tile4_EFEH_temperature: T["u16"] = 0
-    Tile4_EFEV_temperature: T["u16"] = 0
-    Tile4_TA_temperature: T["u16"] = 0
+    Tile4_EFEH_temperature: T["u8"] = 0
+    Tile4_EFEV_temperature: T["u8"] = 0
+    Tile4_TA_temperature: T["u8"] = 0
 
-    Tile5_EFEH_temperature: T["u16"] = 0
-    Tile5_EFEV_temperature: T["u16"] = 0
-    Tile5_TA_temperature: T["u16"] = 0
+    Tile5_EFEH_temperature: T["u8"] = 0
+    Tile5_EFEV_temperature: T["u8"] = 0
+    Tile5_TA_temperature: T["u8"] = 0
 
-    Tile6_EFEH_temperature: T["u16"] = 0
-    Tile6_EFEV_temperature: T["u16"] = 0
-    Tile6_TA_temperature: T["u16"] = 0
+    Tile6_EFEH_temperature: T["u8"] = 0
+    Tile6_EFEV_temperature: T["u8"] = 0
+    Tile6_TA_temperature: T["u8"] = 0
 
-    Tile7_EFEH_temperature: T["u16"] = 0
-    Tile7_EFEV_temperature: T["u16"] = 0
-    Tile7_TA_temperature: T["u16"] = 0
+    Tile7_EFEH_temperature: T["u8"] = 0
+    Tile7_EFEV_temperature: T["u8"] = 0
+    Tile7_TA_temperature: T["u8"] = 0
 
-    Tile8_EFEH_temperature: T["u16"] = 0
-    Tile8_EFEV_temperature: T["u16"] = 0
-    Tile8_TA_temperature: T["u16"] = 0
+    Tile8_EFEH_temperature: T["u8"] = 0
+    Tile8_EFEV_temperature: T["u8"] = 0
+    Tile8_TA_temperature: T["u8"] = 0
 
-    Tile9_EFEH_temperature: T["u16"] = 0
-    Tile9_EFEV_temperature: T["u16"] = 0
-    Tile9_TA_temperature: T["u16"] = 0
+    Tile9_EFEH_temperature: T["u8"] = 0
+    Tile9_EFEV_temperature: T["u8"] = 0
+    Tile9_TA_temperature: T["u8"] = 0
 
-    Tile10_EFEH_temperature: T["u16"] = 0
-    Tile10_EFEV_temperature: T["u16"] = 0
-    Tile10_TA_temperature: T["u16"] = 0
+    Tile10_EFEH_temperature: T["u8"] = 0
+    Tile10_EFEV_temperature: T["u8"] = 0
+    Tile10_TA_temperature: T["u8"] = 0
 
-    Tile11_EFEH_temperature: T["u16"] = 0
-    Tile11_EFEV_temperature: T["u16"] = 0
-    Tile11_TA_temperature: T["u16"] = 0
+    Tile11_EFEH_temperature: T["u8"] = 0
+    Tile11_EFEV_temperature: T["u8"] = 0
+    Tile11_TA_temperature: T["u8"] = 0
 
-    Tile12_EFEH_temperature: T["u16"] = 0
-    Tile12_EFEV_temperature: T["u16"] = 0
-    Tile12_TA_temperature: T["u16"] = 0
+    Tile12_EFEH_temperature: T["u8"] = 0
+    Tile12_EFEV_temperature: T["u8"] = 0
+    Tile12_TA_temperature: T["u8"] = 0
 
-    Tile13_EFEH_temperature: T["u16"] = 0
-    Tile13_EFEV_temperature: T["u16"] = 0
-    Tile13_TA_temperature: T["u16"] = 0
+    Tile13_EFEH_temperature: T["u8"] = 0
+    Tile13_EFEV_temperature: T["u8"] = 0
+    Tile13_TA_temperature: T["u8"] = 0
 
-    Tile14_EFEH_temperature: T["u16"] = 0
-    Tile14_EFEV_temperature: T["u16"] = 0
-    Tile14_TA_temperature: T["u16"] = 0
+    Tile14_EFEH_temperature: T["u8"] = 0
+    Tile14_EFEV_temperature: T["u8"] = 0
+    Tile14_TA_temperature: T["u8"] = 0
 
-    TGU_temperature: T["u7"] = bpack.filed(dafault=0, offset=361)
+    TGU_temperature: T["u7"] = bpack.field(default=0, offset=361)
 
 
 @bpack.bs.decoder
@@ -396,13 +396,13 @@ class SasSsbData:
 
     ssb_flag: bool = False
     polarization: ESasPolarization = bpack.field(
-        size=3, default=ESasPolarization.H_tx_only
+        size=3, default=ESasPolarization.h_tx_only
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
-        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
+        size=2, default=ETemperatureCompensation.fe_off_ta_off
     )
-    _dynamic_data: T["u4"] = bpack.field(default=0, offser=8)
-    _beam_address: T["u10"] = bpack.field(default=0, offser=14)
+    _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
+    _beam_address: T["u10"] = bpack.field(default=0, offset=14)
 
     def get_elevation_beam_address(self) -> int:
         """Return the elevation beam address code.
@@ -474,7 +474,7 @@ class SesSbbData:
     """SES SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.14)."""
 
     cal_mode: ESesCalMode = bpack.field(size=2, default=0)
-    tx_pulse_number: T["5"] = bpack.field(default=0, offset=3)
+    tx_pulse_number: T["u5"] = bpack.field(default=0, offset=3)
     signal_type: ESesSignalType = bpack.field(
         size=4, default=ESesSignalType.echo
     )
