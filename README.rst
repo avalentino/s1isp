@@ -10,13 +10,15 @@ to science data.
 
 The relevant specification used to write the `s1isp` software are:
 
-* `Sentinel-1 Level-0 Product Format Specifications, S1PD.SP.00110.ASTR Issue 1.7
-   <https://sentinels.copernicus.eu/documents/247904/349449/Sentinel-1_Level-0_Product_Format_Specification.pdf>`_
-* `Sentinel-1 SAR Space Packet Protocol Data Unit, S1-IF-ASD-PL-0007 Issue 13
-   <https://sentinels.copernicus.eu/documents/247904/2142675/Sentinel-1-SAR-Space-Packet-Protocol-Data-Unit.pdf>`_
+* S1-IF-ASD-PL-0007_, "Sentinel-1 SAR Space Packet Protocol Data Unit", Issue 13
+* S1PD.SP.00110.ASTR_, "Sentinel-1 Level-0 Product Format Specifications", Issue 1.7
 
 
 .. _bpack: https://github.com/avalentino/bpack
+..  _S1PD.SP.00110.ASTR:
+   https://sentinels.copernicus.eu/documents/247904/349449/Sentinel-1_Level-0_Product_Format_Specification.pdf
+.. _S1-IF-ASD-PL-0007:
+   https://sentinels.copernicus.eu/documents/247904/2142675/Sentinel-1-SAR-Space-Packet-Protocol-Data-Unit.pdf
 
 
 License
