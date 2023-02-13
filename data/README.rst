@@ -25,5 +25,11 @@ the ASF archive using asfsmd_:
       S1B_S3_RAW__0SDV_20200615T162409_20200615T162435_022046_029D76_F3E6
 
 
+Direct URLs:
+
+* https://scihub.copernicus.eu/dhus/odata/v1/Products('81aa3593-3234-4a45-b1ed-e9ac30fae01d')/$value
+* https://datapool.asf.alaska.edu/RAW/SB/S1B_S3_RAW__0SDV_20200615T162409_20200615T162435_022046_029D76_F3E6.zip
+
+
 .. _sentinelsat: https://sentinelsat.readthedocs.io
 .. _asfsmd: https://github.com/avalentino/asfsmd
