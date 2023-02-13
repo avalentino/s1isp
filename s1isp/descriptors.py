@@ -6,6 +6,7 @@ Space Packet Protocol Data Unit" document (S1-IF-ASD-PL-0007) issue 13.
 
 import enum
 import math
+from typing import ClassVar
 
 import bpack
 import bpack.bs
@@ -256,7 +257,7 @@ class SubCommutatedAncillaryDataService:
     """
 
     word_index: T["u8"] = 0
-    word_data: T["u16"] = 0
+    word_data: T["S16"] = 0
 
 
 @bpack.bs.decoder
@@ -436,7 +437,7 @@ class SasSsbData:
         Please note that if ssb_flag=False an TypeError is raised.
         """
         if self.ssb_flag:
-            return ESasTestMode(self._dynamic_data & 0b1000)
+            return ESasTestMode(self._dynamic_data & 0b10000000)
         else:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no sas_test field"
@@ -448,7 +449,7 @@ class SasSsbData:
         Please note that if ssb_flag=False an TypeError is raised.
         """
         if self.ssb_flag:
-            return ESasCalType(self._dynamic_data & 0b0111)
+            return ESasCalType(self._dynamic_data & 0b01110000)
         else:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no cal_type field"
@@ -460,12 +461,12 @@ class SasSsbData:
         Please note that if ssb_flag=True an TypeError is raised.
         """
         if self.ssb_flag:
+            return self._beam_address
+        else:
             raise TypeError(
-                "SAS SSB Data with ssb_flag=True have no "
+                "SAS SSB Data with ssb_flag=False have no "
                 "calibration_beam_address field"
             )
-        else:
-            return self._beam_address
 
 
 @bpack.bs.decoder
@@ -508,6 +509,12 @@ class RadarConfigurationSupportService:
     swl: T["u24"] = 0
     sas_sbb_message: SasSsbData = bpack.field(default_factory=SasSsbData)
     ses_sbb_message: SesSbbData = bpack.field(default_factory=SesSbbData)
+
+    delta_t_suppr_sec: ClassVar[float] = 320 / 8 / REF_FREQ * 1e6
+    """Return the duration of the decimation filter transiont [s].
+
+    See S1-IF-ASD-PL-0007, section 3.2.5.11.
+    """
 
     @property
     def baq_block_len_samples(self) -> int:
@@ -578,14 +585,6 @@ class RadarConfigurationSupportService:
         See S1-IF-ASD-PL-0007, section 3.2.5.11.
         """
         return self.swst / REF_FREQ * 1e6
-
-    @property
-    def dalta_t_suppr_sec(self):
-        """Return the duration of the decimation filter transiont [s].
-
-        See S1-IF-ASD-PL-0007, section 3.2.5.11.
-        """
-        return 320 / 8 / REF_FREQ * 1e6
 
     @property
     def swl_sec(self) -> float:
