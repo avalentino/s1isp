@@ -1,12 +1,12 @@
 [flake8]
 # max_line_length = 79
 # max-complexity = 10
-extend_ignore = E203,W503
+extend_ignore = E203,W503,D105
 extend_select = W504
 per-file-ignores =
     # */*: D105,D107
-    s1isp/descriptors.py: F821
     tests/*: D
     */tests/*: D
+    s1isp/descriptors.py: F821
 statistics = True
 count = True
