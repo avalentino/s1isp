@@ -611,7 +611,7 @@ class RadarConfigurationSupportService:
         assert filter_output_offset == lookup_filter_output_offset(rdcode)
         b = 2 * self.swst - filter_output_offset - 17
         # WARNING: not sure if it is a truncation or a rounding
-        c = b - den * int(b / den)
+        c = int(b - den * int(b / den))
         d = lookup_d_value(rdcode, c)
         # WARNING: not sure if it is a truncation or a rounding
         return 2 * (num * int(b / den) + d + 1)
