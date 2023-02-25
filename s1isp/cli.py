@@ -1,6 +1,8 @@
 """Sentinel-1 Instrument Souce Packets decoder Coommans Line Intervace."""
 
 import sys
+import enum
+import pickle
 import logging
 import pathlib
 import argparse
@@ -9,8 +11,6 @@ from typing import Optional
 
 from . import __version__
 from .decoder import decode_stream, decoded_stream_to_dict
-
-import pandas as pd
 
 try:
     from os import EX_OK
@@ -27,9 +27,20 @@ DEFAULT_LOGLEVEL = "INFO"
 _log = logging.getLogger(__name__)
 
 
-def dump_metadata(
+class EOutputFormat(enum.Enum):
+    PICKLE = "pkl"
+    CSV = "csv"
+    HDF5 = "h5"
+    XLSX = "xlsx"
+
+    def __str__(self):
+        return self.value
+
+
+def dump_records(
     filename,
     outfile: Optional[str] = None,
+    output_format: EOutputFormat = EOutputFormat.PICKLE,
     skip: Optional[int] = None,
     maxcount: Optional[int] = None,
     bytes_offset: int = 0,
@@ -37,8 +48,9 @@ def dump_metadata(
     force: bool = False,
 ):
     """Dump content od primary and secondary headers into an XLSX file."""
+    output_format = EOutputFormat(output_format)
     if outfile is None:
-        outfile = pathlib.Path(filename).stem + ".xlsx"
+        outfile = f"{pathlib.Path(filename).stem}.{output_format.value}"
 
     if not force and pathlib.Path(outfile).exists():
         raise FileExistsError(f"File already exists: {outfile}")
@@ -55,25 +67,45 @@ def dump_metadata(
     elapsed = datetime.datetime.now() - t0
     _log.info("Decoding complete (elapsed time %s).", elapsed)
 
-    t0 = datetime.datetime.now()
-    _log.info("Convert data to dict ...")
-    records = decoded_stream_to_dict(records, enum_value=enum_value)
-    elapsed = datetime.datetime.now() - t0
-    _log.info("Conversion to dict completed (elapsed time: %s).", elapsed)
+    if output_format == EOutputFormat.PICKLE:
+        data = dict(
+            records=records,
+            subcomm_data_records=subcomm_data_records,
+        )
+        with open(outfile, "wb") as fd:
+            pickle.dump(data, fd)
+    else:
+        import pandas as pd
 
-    # TODO: remove
-    import pickle
-    with open("subcom_data.pkl", "wb") as fd:
-        pickle.dump(subcomm_data_records, fd)
+        t0 = datetime.datetime.now()
+        _log.info("Convert data to dict ...")
+        records = decoded_stream_to_dict(records, enum_value=enum_value)
+        elapsed = datetime.datetime.now() - t0
+        _log.info("Conversion to dict completed (elapsed time: %s).", elapsed)
 
-    t0 = datetime.datetime.now()
-    _log.info("Writing metadata to XLSX...")
-    df = pd.DataFrame(records)
-    df.to_excel(outfile)
-    elapsed = datetime.datetime.now() - t0
-    _log.info("Metadata written to %s (elapsed time: {%s}).", outfile, elapsed)
+        t0 = datetime.datetime.now()
+        _log.info("Convert data to DataFrame ...")
+        df = pd.DataFrame(records)
+        elapsed = datetime.datetime.now() - t0
+        _log.info(
+            "Conversion to DataFrame completed (elapsed time: %s).",
+            elapsed,
+        )
 
-    return df
+        t0 = datetime.datetime.now()
+        _log.info("Writing data to %s ...", output_format.name)
+
+        if output_format == EOutputFormat.CSV:
+            df.to_csv(outfile)
+        elif output_format == EOutputFormat.XLSX:
+            df.to_excel(outfile)
+        elif output_format == EOutputFormat.HDF5:
+            df.to_hdf(outfile, key="isp")
+        else:
+            raise ValueError(f"Unknown output format '{output_format}'")
+
+        elapsed = datetime.datetime.now() - t0
+        _log.info("Data written to %s (elapsed time: {%s}).", outfile, elapsed)
 
 
 def _autocomplete(parser: argparse.ArgumentParser):
@@ -169,7 +201,13 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
         help="dump the enum numeric value instead of the symbolic name",
     )
     parser.add_argument(
-        "-f",
+        "--output-format", "--of",
+        choices=EOutputFormat,
+        type=EOutputFormat,
+        default=EOutputFormat.PICKLE.value,
+        help="specify the output format (default: %(default)r)",
+    )
+    parser.add_argument(
         "--force",
         action='store_true',
         default=False,
@@ -225,9 +263,10 @@ def main(*argv):
 
         _log.debug("args: %s", args)
 
-        dump_metadata(
+        dump_records(
             args.filename,
             args.outfile,
+            args.output_format,
             skip=args.skip,
             maxcount=args.maxcount,
             bytes_offset=args.bytes_offset,
