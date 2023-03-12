@@ -11,10 +11,13 @@ from typing import Optional
 import numpy as np
 import bpack.np
 
-from .descriptors import EBaqMode, ETestMode, RadarConfigurationSupportService
-from .constants_and_luts import get_baq_lut
+from . import _huffman as huffman
+from .descriptors import EBaqMode, ETestMode
+from .constants_and_luts import get_baq_lut, get_fdbaq_lut
 
 BLOCKSIZE = 128
+BRC_CODE_SIZE = 3  # bits
+THIDX_SIZE = 8  # bits
 
 
 class EDataFormatType(enum.Enum):
@@ -212,7 +215,102 @@ def baq_decode(
     )
 
 
-def fdbaq_decode(*args, **kwargs):
+def huffman_decode(
+    bits,
+    nq: int,
+    *,
+    brc_code_size: int = BRC_CODE_SIZE,
+    thidx_size: int = THIDX_SIZE,
+    blocksize: int = BLOCKSIZE,
+):
+    """Decode Huffman encoded data."""
+    nb = int(np.ceil(nq / blocksize))  # == ceil(2 * nq / 256)
+
+    brc_data = np.empty(nb, dtype=np.uint8)
+    thidx_data = np.empty(nb, dtype=np.uint8)
+
+    idx = idx0 = 0
+    ie = np.empty(nq, dtype=np.uint8)
+    for bidx in range(nb):
+        brc_data[bidx] = (
+            (bits[idx] << 2) | (bits[idx + 1] << 1) | bits[idx + 2]
+        )
+        idx += brc_code_size
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+        _, count = huffman.decode(
+            bits[idx:],
+            i1 - i0,  # nsamples
+            brc_data[bidx],
+            out=ie[i0:i1],
+            count=True,
+        )
+        idx += count
+    nwords = int(np.ceil((idx - idx0) / 16))
+    idx = idx0 + nwords * 16
+
+    idx0 = idx
+    io = np.empty(nq, dtype=np.uint8)
+    for bidx in range(nb):
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+        _, count = huffman.decode(
+            bits[idx:],
+            i1 - i0,  # nsamples
+            brc_data[bidx],
+            out=io[i0:i1],
+            count=True,
+        )
+        idx += count
+    nwords = int(np.ceil((idx - idx0) / 16))
+    idx = idx0 + nwords * 16
+
+    idx0 = idx
+    qe = np.empty(nq, dtype=np.uint8)
+    for bidx in range(nb):
+        thidx_data[bidx] = np.packbits(bits[idx : idx + thidx_size])
+        idx += thidx_size
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+        _, count = huffman.decode(
+            bits[idx:],
+            i1 - i0,  # nsamples
+            brc_data[bidx],
+            out=qe[i0:i1],
+            count=True,
+        )
+        idx += count
+    nwords = int(np.ceil((idx - idx0) / 16))
+    idx = idx0 + nwords * 16
+
+    idx0 = idx
+    qo = np.empty(nq, dtype=np.uint8)
+    for bidx in range(nb):
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+        _, count = huffman.decode(
+            bits[idx:],
+            i1 - i0,  # nsamples
+            brc_data[bidx],
+            out=qo[i0:i1],
+            count=True,
+        )
+        idx += count
+    nwords = int(np.ceil((idx - idx0) / 16))
+    idx = idx0 + nwords * 16
+
+    assert idx == len(bits), f"{idx = }, {len(bits) = }"
+
+    return ie, io, qe, qo, brc_data, thidx_data
+
+
+def fdbaq_decode(
+    data: bytes,
+    nq: int,
+    *,
+    out: Optional[np.ndarray] = None,
+    blocksize: int = BLOCKSIZE,
+) -> np.ndarray:
     """Decode user data for data format D (Decimatiion + FDBAQ algorithm).
 
     FDBAQ is the Flexible Dynamic Block Adaptive Quantisation.
@@ -220,17 +318,39 @@ def fdbaq_decode(*args, **kwargs):
 
     See section 4 and 4.4 of S1-IF-ASD-PL-0007.
     """
-    raise NotImplementedError("fdbaq_decode")
+    bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(bits, nq)
+    assert len(ie) == len(io) == len(qe) == len(qo) == nq
+
+    # TODO: use out directly
+    decoded_ie = np.empty(nq, dtype=np.float32)
+    decoded_io = np.empty(nq, dtype=np.float32)
+    decoded_qe = np.empty(nq, dtype=np.float32)
+    decoded_qo = np.empty(nq, dtype=np.float32)
+
+    for bidx, (brc, thidx) in enumerate(zip(brc_data, thidx_data)):
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+
+        lut = get_fdbaq_lut(brc, thidx)
+
+        decoded_ie[i0:i1] = lut[ie[i0:i1]]
+        decoded_io[i0:i1] = lut[io[i0:i1]]
+        decoded_qe[i0:i1] = lut[qe[i0:i1]]
+        decoded_qo[i0:i1] = lut[qo[i0:i1]]
+
+    return align_quads(
+        decoded_ie, decoded_io, decoded_qe, decoded_qo, nq, out=out
+    )
 
 
 def decode_ud(
     data: bytes,
     nq: int,
-    rcss: RadarConfigurationSupportService,
-    tstmod: ETestMode,
+    baqmod: EBaqMode,
+    tstmod: ETestMode = ETestMode.default,
 ) -> np.ndarray:
     """Decode user data for data."""
-    baqmod = rcss.baq_mode
     data_format_type = get_data_format_type(baqmod, tstmod)
 
     if data_format_type == EDataFormatType.A:
@@ -240,6 +360,6 @@ def decode_ud(
     elif data_format_type == EDataFormatType.C:
         return baq_decode(data, nq, baqmod=baqmod)
     elif data_format_type == EDataFormatType.D:
-        return fdbaq_decode(data, rcss)
+        return fdbaq_decode(data, nq)
     else:
         raise ValueError(f"Invalid data format type: '{data_format_type}'.")

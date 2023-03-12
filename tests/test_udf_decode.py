@@ -105,9 +105,9 @@ def test_decode_txcal(txcal_data, txcal_ref_data):
     assert rcss.ses_sbb_message.signal_type == ESesSignalType.tx_cal
 
     nq = secondary_header.radar_sample_count_service.number_of_quads
-    rcss = secondary_header.radar_configuration_support_service
+    baqmod = rcss.baq_mode
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
-    data = decode_ud(txcal_data[PHSIZE + SHSIZE:], nq, rcss, tstmod)
+    data = decode_ud(txcal_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, txcal_ref_data["udf"])
 
 
@@ -119,7 +119,7 @@ def test_decode_noise(noise_data, noise_ref_data):
     assert rcss.ses_sbb_message.signal_type == ESesSignalType.noise
 
     nq = secondary_header.radar_sample_count_service.number_of_quads
-    rcss = secondary_header.radar_configuration_support_service
+    baqmod = rcss.baq_mode
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
-    data = decode_ud(noise_data[PHSIZE + SHSIZE:], nq, rcss, tstmod)
+    data = decode_ud(noise_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, noise_ref_data["udf"])

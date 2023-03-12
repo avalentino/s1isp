@@ -3,7 +3,7 @@
 PYTHON=python3
 PKGNAME=s1isp
 
-.PHONY: default help dist check fullcheck coverage lint api docs clean cleaner distclean
+.PHONY: default help ext dist check fullcheck coverage lint api docs clean cleaner distclean
 
 default: help
 
@@ -11,6 +11,7 @@ help:
 	@echo "Usage: make <TARGET>"
 	@echo "Available targets:"
 	@echo "  help      - print this help message"
+	@echo "  ext       - built the cython extension inplace"
 	@echo "  dist      - generate the distribution packages (source and wheel)"
 	@echo "  check     - run a full test (using pytest)"
 	@echo "  fullcheck - run a full test (using tox)"
@@ -21,6 +22,9 @@ help:
 	@echo "  clean     - clean build artifacts"
 	@echo "  cleaner   - clean cache files and working directories of al tools"
 	@echo "  distclean - clean all the generated files"
+
+ext:
+	$(PYTHON) setup.py build_ext --inplace
 
 dist:
 	$(PYTHON) -m build
@@ -54,6 +58,7 @@ docs:
 clean:
 	$(RM) -r *.egg-info build
 	find . -name __pycache__ -type d -exec $(RM) -r {} +
+	$(RM) s1isp/_huffman.c s1isp/*.so s1isp/*.o
 	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/tests/__pycache__
 	# $(MAKE) -C docs clean
 	$(RM) -r docs/_build
