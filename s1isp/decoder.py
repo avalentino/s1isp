@@ -20,6 +20,12 @@ import tqdm
 import bpack
 
 
+__all__ = [
+    "isp_to_dict",
+    "decode_stream",
+    "decoded_stream_to_dict",
+    "SubCommutatedDataDecoder",
+]
 
 
 SUB_COMM_LEN = 64
@@ -28,6 +34,7 @@ SUB_COMM_LEN = 64
 class DecodedDataItem(NamedTuple):
     primary_header: PacketPrimaryHeader
     secondary_header: PacketSecondaryHeader
+    # udf: Optional[bytes] = None
 
 
 class SubCommItem(NamedTuple):
@@ -198,25 +205,109 @@ class SubCommutatedDataDecoder:
         return out
 
 
+def decode_stream(
+    filename,
+    skip: Optional[int] = None,
+    maxcount: Optional[int] = None,
+    bytes_offset: int = 0
+):
+    """Decode packet headers."""
+    primary_header_size = bpack.calcsize(
+        PacketPrimaryHeader, bpack.EBaseUnits.BYTES
+    )
+    secondary_header_size = bpack.calcsize(
+        PacketSecondaryHeader, bpack.EBaseUnits.BYTES
+    )
 
-            if step <= 0:
-                self._cycle_count += 1
+    packet_counter: int = 0
+    records: List[DecodedDataItem] = []
+    subcom_data_records: List[SubCommItem] = []
+    pbar = tqdm.tqdm(unit=" packets", desc="decoded")
+    with open(filename, "rb") as fd, pbar:
+        if bytes_offset:
+            assert bytes_offset >= 0
+            fd.seek(bytes_offset)
 
-            if step not in {1, 1 - self.MAX_WORD_INDEX}:
-                self._log.warning(
-                    "Broken sequence of sub-commutated data word indexes: "
-                    "curret=%d, previous=%d.",
-                    word_index,
-                    previous_word_index,
+        while fd:
+            # primary header
+            data = fd.read(primary_header_size)
+            if len(data) == 0 or (maxcount and len(records) > maxcount):
+                break
+
+            # type - PacketPrimaryHeader
+            primary_header = PacketPrimaryHeader.frombytes(data)
+
+            assert primary_header.version == 0
+            assert primary_header.packet_type == 0
+            assert primary_header.sequence_flags == 3
+            # assert primary_header.sequence_counter == packet_counter % 2**14
+
+            # secondary header
+            assert primary_header.secondary_header_flag
+            data_field_size = primary_header.packet_data_length + 1
+
+            if skip and packet_counter < skip:
+                packet_counter += 1
+                fd.seek(data_field_size, io.SEEK_CUR)
+                continue
+
+            # data = fd.read(data_field_size)
+            data = fd.read(secondary_header_size)
+
+            # type - PacketSecondaryHeader
+            secondary_header = PacketSecondaryHeader.frombytes(
+                data[:secondary_header_size]
+            )
+
+            # -- Datation Service
+            # ds = secondary_header.datation_service
+
+            # -- Fixed Ancillary Data Service
+            # fasd = secondary_header.fixed_ancillary_data_service
+            sync = secondary_header.fixed_ancillary_data_service.sync_marker
+            if sync != SYNK_MARKER:
+                raise SyncMarkerException(
+                    f"packat count: {packet_counter + 1}"
                 )
 
-        self._word_indexes.append(word_index)
-        self._datastream.write(data)
+            # -- Sub-commutation Ancillary Data Service
+            # sc_ads = secondary_header.subcom_ancillary_data_service
+            sc_data_item = SubCommItem(
+                packet_counter,
+                secondary_header.subcom_ancillary_data_service,
+            )
+            subcom_data_records.append(sc_data_item)
 
-    def decode(self):
-        """Deconde sub-commutated data."""
-        # TODO
-        raise NotImplementedError
+            # -- Counters Service
+            cs = secondary_header.counters_service
+            assert packet_counter == cs.space_packet_count
+            packet_counter += 1
+
+            # -- Radar Configuration Support Service
+            rcss = secondary_header.radar_configuration_support_service
+            assert rcss.error_flag is False
+            # baq_block_len = 8 * (radar_cfg.baq_block_len + 1)
+            # assert baq_block_len == 256, (
+            #     f'baq_block_len: {radar_cfg.baq_block_len}, '
+            #     f'baq_mode: {radar_cfg.baq_mode}'
+            # )
+
+            # -- Radar Sample Count Service
+            rscs = secondary_header.radar_sample_count_service
+            assert 2 * rscs.number_of_quads == rcss.swl_n3rx_samples
+
+            # -- user data
+            # TODO: decode science data
+
+            # append a new record
+            records.append(DecodedDataItem(primary_header, secondary_header))
+            
+            # fd.read(data_field_size - secondary_header_size)
+            fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
+
+            pbar.update()
+
+    return records, subcom_data_records
 
 
 def _sas_to_dict(sas):
@@ -307,117 +398,17 @@ def isp_to_dict(
     return data
 
 
-def decode_stream(
-    filename,
-    skip: Optional[int] = None,
-    maxcount: Optional[int] = None,
-    bytes_offset: int = 0,
+def decoded_stream_to_dict(
+    records: List[DecodedDataItem],
     enum_value: bool = False,
-):
-    """Decode packet headers and store them into a pandas data-frame."""
-    log = logging.getLogger(__name__)
-    log.info(f'start decoding: "{filename}"')
-    t0 = datetime.datetime.now()
+) -> List[dict]:
+    """Convert a list of decoded ISPs into a list of metadata dictionaries."""
+    out = []
+    for record in records:
+        primary_header, secondary_header = record
+        metadata = isp_to_dict(
+            primary_header, secondary_header, enum_value=enum_value
+        )
+        out.append(metadata)
 
-    primary_header_size = bpack.calcsize(
-        PacketPrimaryHeader, bpack.EBaseUnits.BYTES
-    )
-    secondary_header_size = bpack.calcsize(
-        PacketSecondaryHeader, bpack.EBaseUnits.BYTES
-    )
-    records = []
-    # subcom_data_decoder = SubCommutatedDataDecoder()  # TODO: remove
-    subcom_data_records = []
-    packet_counter = 0
-    pbar = tqdm.tqdm(unit=" packets", desc="decoded")
-    with open(filename, "rb") as fd, pbar:
-        if bytes_offset:
-            assert bytes_offset >= 0
-            fd.seek(bytes_offset)
-
-        while fd:
-            # primary header
-            data = fd.read(primary_header_size)
-            if len(data) == 0 or (maxcount and len(records) > maxcount):
-                break
-
-            # type - PacketPrimaryHeader
-            primary_header = PacketPrimaryHeader.frombytes(data)
-
-            assert primary_header.version == 0
-            assert primary_header.packet_type == 0
-            assert primary_header.sequence_flags == 3
-            # assert primary_header.sequence_counter == packet_counter % 2**14
-
-            # secondary header
-            assert primary_header.secondary_header_flag
-            data_field_size = primary_header.packet_data_length + 1
-
-            if skip and packet_counter < skip:
-                packet_counter += 1
-                fd.seek(data_field_size, io.SEEK_CUR)
-                continue
-
-            # data = fd.read(data_field_size)
-            data = fd.read(secondary_header_size)
-
-            # type - PacketSecondaryHeader
-            secondary_header = PacketSecondaryHeader.frombytes(
-                data[:secondary_header_size]
-            )
-
-            sync = secondary_header.fixed_ancillary_data_service.sync_marker
-            if sync != SYNK_MARKER:
-                raise SyncMarkerException(
-                    f"packat count: {packet_counter + 1}"
-                )
-
-            subcom_data = secondary_header.subcom_ancillary_data_service
-            subcom_data_records.append(subcom_data)
-            # TODO: reove
-            # subcom_data_decoder.feed(
-            #     subcom_data.word_index, subcom_data.word_data
-            # )
-
-            radar_cfg = secondary_header.radar_configuration_support_service
-            assert radar_cfg.error_flag is False
-            # baq_block_len = 8 * (radar_cfg.baq_block_len + 1)
-            # assert baq_block_len == 256, (
-            #     f'baq_block_len: {radar_cfg.baq_block_len}, '
-            #     f'baq_mode: {radar_cfg.baq_mode}'
-            # )
-
-            counters_service = secondary_header.counters_service
-            assert packet_counter == counters_service.space_packet_count
-            packet_counter += 1
-
-            # update the dataframe
-            metadata = isp_to_dict(
-                primary_header, secondary_header, enum_value=enum_value
-            )
-            records.append(metadata)
-
-            # user data
-            # fd.read(data_field_size - secondary_header_size)
-            fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
-
-            # TBW
-
-            pbar.update()
-
-    elapsed = datetime.datetime.now() - t0
-    log.info(f"decoding complete (elapsed time: {elapsed})")
-
-    # TODO: remove
-    import pickle
-    with open("subcom_data.pkl", "wb") as fd:
-        pickle.dump(subcom_data_records, fd)
-
-    # TODO: remove
-    import json
-    with open("subcom_data.json", "w") as fd:
-        # data = [bpack.asdict(item) for item in subcom_data_records]
-        data = [item.word_index for item in subcom_data_records]
-        json.dump(data, fd, indent="  ")
-
-    return records
+    return out

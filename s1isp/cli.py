@@ -7,7 +7,7 @@ import argparse
 from typing import Optional
 
 from . import __version__
-from .decoder import decode_stream
+from .decoder import decode_stream, decoded_stream_to_dict
 
 import pandas as pd
 
@@ -39,19 +39,26 @@ def dump_metadata(
     if not force and pathlib.Path(outfile).exists():
         raise FileExistsError(f"File already exists: {outfile}")
 
-    records = decode_stream(
+    records, subcomm_data_records = decode_stream(
         filename,
         skip=skip,
         maxcount=maxcount,
         bytes_offset=bytes_offset,
         enum_value=enum_value,
     )
+    records = decoded_stream_to_dict(records, enum_value=enum_value)
+    # TODO: remove
+    import pickle
+    with open("subcom_data.pkl", "wb") as fd:
+        pickle.dump(subcomm_data_records, fd)
+
     df = pd.DataFrame(records)
 
     log = logging.getLogger(__name__)
     log.info("Writing metadata ...")
     df.to_excel(outfile)
-    log.info("Metadata written to %s", outfile)
+
+    return df
 
 
 def _autocomplete(parser: argparse.ArgumentParser):
