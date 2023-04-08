@@ -4,6 +4,7 @@ import sys
 import logging
 import pathlib
 import argparse
+import datetime
 from typing import Optional
 
 from . import __version__
@@ -23,6 +24,9 @@ LOGFMT = "%(asctime)s %(levelname)-8s -- %(message)s"
 DEFAULT_LOGLEVEL = "INFO"
 
 
+_log = logging.getLogger(__name__)
+
+
 def dump_metadata(
     filename,
     outfile: Optional[str] = None,
@@ -39,24 +43,35 @@ def dump_metadata(
     if not force and pathlib.Path(outfile).exists():
         raise FileExistsError(f"File already exists: {outfile}")
 
+    _log.info(f"Start decoding: '{filename}' ...")
+    t0 = datetime.datetime.now()
+
     records, subcomm_data_records = decode_stream(
         filename,
         skip=skip,
         maxcount=maxcount,
         bytes_offset=bytes_offset,
-        enum_value=enum_value,
     )
+    elapsed = datetime.datetime.now() - t0
+    _log.info("Decoding complete (elapsed time %s).", elapsed)
+
+    t0 = datetime.datetime.now()
+    _log.info("Convert data to dict ...")
     records = decoded_stream_to_dict(records, enum_value=enum_value)
+    elapsed = datetime.datetime.now() - t0
+    _log.info("Conversion to dict completed (elapsed time: %s).", elapsed)
+
     # TODO: remove
     import pickle
     with open("subcom_data.pkl", "wb") as fd:
         pickle.dump(subcomm_data_records, fd)
 
+    t0 = datetime.datetime.now()
+    _log.info("Writing metadata to XLSX...")
     df = pd.DataFrame(records)
-
-    log = logging.getLogger(__name__)
-    log.info("Writing metadata ...")
     df.to_excel(outfile)
+    elapsed = datetime.datetime.now() - t0
+    _log.info("Metadata written to %s (elapsed time: {%s}).", outfile, elapsed)
 
     return df
 
@@ -199,7 +214,6 @@ def main(*argv):
     # setup logging
     logging.basicConfig(format=LOGFMT, level=DEFAULT_LOGLEVEL)
     logging.captureWarnings(True)
-    log = logging.getLogger(__name__)
 
     # parse cmd line arguments
     args = parse_args(argv if argv else None)
@@ -207,9 +221,9 @@ def main(*argv):
     # execute main tasks
     exit_code = EX_OK
     try:
-        log.setLevel(args.loglevel)
+        _log.setLevel(args.loglevel)
 
-        log.debug("args: %s", args)
+        _log.debug("args: %s", args)
 
         dump_metadata(
             args.filename,
@@ -221,15 +235,15 @@ def main(*argv):
             force=args.force,
         )
     except Exception as exc:  # noqa: B902
-        log.critical(
+        _log.critical(
             "unexpected exception caught: {!r} {}".format(
                 type(exc).__name__, exc
             )
         )
-        log.debug("stacktrace:", exc_info=True)
+        _log.debug("stacktrace:", exc_info=True)
         exit_code = EX_FAILURE
     except KeyboardInterrupt:
-        log.warning("Keyboard interrupt received: exit the program")
+        _log.warning("Keyboard interrupt received: exit the program")
         exit_code = EX_INTERRUPT
 
     return exit_code
