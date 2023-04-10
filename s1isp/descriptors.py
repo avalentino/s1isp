@@ -19,6 +19,7 @@ from .constants_and_luts import (
     lookup_filter_output_offset,
     lookup_range_decimation_info,
     RangeDecimationInfo,
+    EBaqMode,
 )
 
 BITS = bpack.EBaseUnits.BITS
@@ -94,18 +95,6 @@ class ERxChannelId(enum.IntEnum):
 
     rxv = 0
     rxh = 1
-
-
-class EBaqMode(enum.IntEnum):
-    """BAQ modes (S1-IF-ASD-PL-0007, section 3.2.5.2)."""
-
-    bypass = 0
-    baq3 = 3
-    baq4 = 4
-    baq5 = 5
-    fdbaq_mode_0 = 12
-    fdbaq_mode_1 = 13
-    fdbaq_mode_2 = 14
 
 
 class ERangeDecimation(enum.IntEnum):
@@ -492,7 +481,7 @@ class RadarConfigurationSupportService:
     """
 
     error_flag: bool = False
-    baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.bypass)
+    baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.BYPASS)
     baq_block_len: T["u8"] = 0
     # n. 8 bits padding
     range_decimation: ERangeDecimation = bpack.field(
