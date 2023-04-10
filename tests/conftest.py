@@ -1,5 +1,6 @@
 """Common fixtures."""
 
+import json
 import pathlib
 
 import pytest
@@ -35,3 +36,10 @@ def noise_ref_data():
     # keys: "primary_header", "secondary_header", "udf"
     filename = DATAROOT / "000000-noise.npz"
     return dict(np.load(filename, allow_pickle=True))
+
+
+@pytest.fixture
+def fdbaq_reconstruction_lut():
+    filename = DATAROOT / "reconstruction-lut.json"
+    with open(filename) as fd:
+        return json.load(fd)
