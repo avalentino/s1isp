@@ -10,6 +10,14 @@ from s1isp.descriptors import (
     PacketPrimaryHeader,
     PacketSecondaryHeader,
 )
+from .test_huffman import (
+    get_huffman_data,
+    BRC,
+    HCODE_LUTS,
+    HUFFMAN_CODES,
+    NSAMPLES as BLOCKSIZE,
+)
+
 
 PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
 SHSIZE = bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES)
@@ -95,6 +103,91 @@ def test_bypass_decode_out(nbits=10):
     np.testing.assert_array_equal(out, cdata)
     np.testing.assert_array_equal(buf, cdata)
     assert buf is out
+
+
+def get_fdbaq_channel(
+    blocksize: int = BLOCKSIZE, samples: int = None, header=False,
+):
+    nblocks = len(HUFFMAN_CODES)
+    if samples is None:
+        samples = nblocks * blocksize
+    if header == "thidx":
+        thidx = np.arange(
+            blocksize, blocksize + nblocks, dtype=np.uint8
+        )
+        thidx_bits = np.unpackbits(thidx[:, None], axis=1)
+    else:
+        thidx = None
+
+    brcs = []
+    bits = []
+    values = []
+    for bidx, brc in enumerate(HUFFMAN_CODES):
+        brcs.append(brc)
+        if header == 'thidx':
+            bits.extend(thidx_bits[bidx])
+        elif header:
+            bits.extend(BRC[brc])
+
+        bits_seq, val_seq = get_huffman_data(brc, blocksize)
+        bits.extend(bits_seq.tolist())
+        values.extend(val_seq)
+
+    nbits = len(bits)
+    nwords = int(np.ceil(nbits / 16))
+    pad = nwords * 16 - nbits
+    bits.extend([0] * pad)
+    nbits = len(bits)
+    assert len(bits) % 16 == 0
+
+    return bits, values, brcs, thidx, pad
+
+
+def get_fdbaq_stream(blocksize):
+    ie_bits, ie_values, brcs, _, ie_pad = get_fdbaq_channel(
+        blocksize, header=True
+    )
+    io_bits, io_values, _, _, io_pad = get_fdbaq_channel(blocksize)
+    qe_bits, qe_values, _, thidx, qe_pad = get_fdbaq_channel(
+        blocksize, header="thidx"
+    )
+    qo_bits, qo_values, _, _, qo_pad = get_fdbaq_channel(blocksize)
+
+    assert ie_pad + io_pad + qe_pad + qo_pad > 1
+
+    bits = np.asarray(ie_bits + io_bits + qe_bits + qo_bits, dtype=np.uint8)
+
+    return bits, [ie_values, io_values, qe_values, qo_values], brcs, thidx
+
+
+def test_huffman_decode(blocksize=BLOCKSIZE):
+    bits, values, brcs, thidx = get_fdbaq_stream(blocksize)
+    ie_values, io_values, qe_values, qo_values = values
+    assert len(ie_values) == len(io_values) == len(qe_values) == len(qo_values)
+    nq = len(ie_values)
+
+    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(bits, nq)
+
+    np.testing.assert_array_equal(brcs, brc_data)
+    np.testing.assert_array_equal(thidx, thidx_data)
+
+    ie_hcodes = np.zeros(nq, dtype=np.int8)
+    io_hcodes = np.zeros(nq, dtype=np.int8)
+    qe_hcodes = np.zeros(nq, dtype=np.int8)
+    qo_hcodes = np.zeros(nq, dtype=np.int8)
+    for bidx, brc_value in enumerate(brc_data):
+        i0 = bidx * blocksize
+        i1 = min(i0 + blocksize, nq)
+        lut = HCODE_LUTS[brc_value]
+        ie_hcodes[i0:i1] = lut[ie[i0:i1]]
+        io_hcodes[i0:i1] = lut[io[i0:i1]]
+        qe_hcodes[i0:i1] = lut[qe[i0:i1]]
+        qo_hcodes[i0:i1] = lut[qo[i0:i1]]
+
+    np.testing.assert_array_equal(ie_hcodes, ie_values)
+    np.testing.assert_array_equal(io_hcodes, io_values)
+    np.testing.assert_array_equal(qe_hcodes, qe_values)
+    np.testing.assert_array_equal(qo_hcodes, qo_values)
 
 
 def test_decode_txcal(txcal_data, txcal_ref_data):
