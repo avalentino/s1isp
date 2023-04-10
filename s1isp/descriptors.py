@@ -547,9 +547,9 @@ class RadarConfigurationSupportService:
 
         See S1-IF-ASD-PL-0007, section 3.2.5.7).
         """
-        return 1.e6 * (
-            self.tx_ramp_rate_hz_per_sec / (4 * REF_FREQ) +
-            self.tx_pulse_start_freq * REF_FREQ / 2**14
+        return 1.0e6 * (
+            self.tx_ramp_rate_hz_per_sec / (4 * REF_FREQ)
+            + self.tx_pulse_start_freq * REF_FREQ / 2**14
         )
 
     @property
@@ -595,7 +595,7 @@ class RadarConfigurationSupportService:
         return self.swl / REF_FREQ * 1e6
 
     @property
-    def swl_n3rx_samples(self) -> int:
+    def swl_n3rx_samples(self) -> int:  # TODO: check
         """Return the sampling Window Length in samples after the decimation.
 
         Number of complex samples (I/Q pairs) after decimation (i.e. in the

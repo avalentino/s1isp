@@ -28,6 +28,8 @@ _log = logging.getLogger(__name__)
 
 
 class EOutputFormat(enum.Enum):
+    """Output formats for ISP headers dumps."""
+
     PICKLE = "pkl"
     CSV = "csv"
     HDF5 = "h5"
@@ -118,7 +120,7 @@ def _autocomplete(parser: argparse.ArgumentParser):
 
 
 def _add_logging_control_args(
-    parser: argparse.ArgumentParser, default_loglevel: str = DEFAULT_LOGLEVEL,
+    parser: argparse.ArgumentParser, default_loglevel: str = DEFAULT_LOGLEVEL
 ):
     """Add command line options for logging control."""
     loglevels = [logging.getLevelName(level) for level in range(10, 60, 10)]
@@ -177,7 +179,8 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     parser.add_argument(
         "-o",
         "--outfile",
-        help="output file name for metadata (XLSX format)",
+        help="output file name for metadata (default file with the "
+        "same basename of the input stored in the local folder)",
     )
     parser.add_argument(
         "--skip",
@@ -196,12 +199,13 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--enum-value",
-        action='store_true',
+        action="store_true",
         default=False,
         help="dump the enum numeric value instead of the symbolic name",
     )
     parser.add_argument(
-        "--output-format", "--of",
+        "--output-format",
+        "--of",
         choices=EOutputFormat,
         type=EOutputFormat,
         default=EOutputFormat.PICKLE.value,
@@ -209,7 +213,7 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--force",
-        action='store_true',
+        action="store_true",
         default=False,
         help="overwtire the output file if it already exists",
     )

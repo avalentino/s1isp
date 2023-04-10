@@ -5,6 +5,9 @@ import enum
 import logging
 from typing import List, NamedTuple, Optional, Type
 
+import tqdm
+import bpack
+
 from .descriptors import (
     PVTAncillatyData,
     PacketPrimaryHeader,
@@ -15,10 +18,6 @@ from .descriptors import (
     SubCommutatedAncillaryDataService,
 )
 from .constants_and_luts import SYNK_MARKER
-
-import tqdm
-import bpack
-
 
 __all__ = [
     "isp_to_dict",
@@ -164,8 +163,8 @@ class SubCommutatedDataDecoder:
             if step < 0:
                 self._new_cycle()
             elif (
-                self._packet_count is not None and
-                packet_count - self._packet_count > 1
+                self._packet_count is not None
+                and packet_count - self._packet_count > 1
             ):
                 self._new_cycle()
 
@@ -186,8 +185,7 @@ class SubCommutatedDataDecoder:
         self.finalize()
 
         self._log.info(
-            "%d sub-commutated data cycles collected.",
-            len(self._cycle_data)
+            "%d sub-commutated data cycles collected.", len(self._cycle_data)
         )
 
         incomplete_count = 0
@@ -199,8 +197,7 @@ class SubCommutatedDataDecoder:
                 continue
             out.append(item.decode())
         self._log.info(
-            "%d inclomplete sub-commutated data cycles.",
-            incomplete_count
+            "%d inclomplete sub-commutated data cycles.", incomplete_count
         )
         return out
 
@@ -209,7 +206,7 @@ def decode_stream(
     filename,
     skip: Optional[int] = None,
     maxcount: Optional[int] = None,
-    bytes_offset: int = 0
+    bytes_offset: int = 0,
 ):
     """Decode packet headers."""
     primary_header_size = bpack.calcsize(
@@ -301,7 +298,7 @@ def decode_stream(
 
             # append a new record
             records.append(DecodedDataItem(primary_header, secondary_header))
-            
+
             # fd.read(data_field_size - secondary_header_size)
             fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
 
@@ -324,9 +321,7 @@ def _sas_to_dict(sas):
             "calibration_beam_address"
         ] = sas.get_calibration_beam_address()
     else:
-        sas_data[
-            "elevation_beam_address"
-        ] = sas.get_elevation_beam_address()
+        sas_data["elevation_beam_address"] = sas.get_elevation_beam_address()
         sas_data["azimuth_beam_address"] = sas.get_azimuth_beam_address()
         sas_data["sas_test"] = None
         sas_data["cal_type"] = None
