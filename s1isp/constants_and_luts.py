@@ -8,7 +8,7 @@ import enum
 import dataclasses
 from typing import List
 from fractions import Fraction
-
+from functools import lru_cache
 
 REF_FREQ = 37.53472224  # [MHz]
 SYNK_MARKER = 0x352EF853  # (S1-IF-ASD-PL-0007, section 3.2.2.1)
@@ -63,6 +63,7 @@ def lookup_range_decimation_info(code: int) -> RangeDecimationInfo:
 
 # 2D LUT for the computation of the D parameter
 # (S1-IF-ASD-PL-0007, table 5.1-1)
+# fmt: off
 D_LUT2D = [
     [1, 1, 2, 3],
     [1, 1, 2],
@@ -77,6 +78,7 @@ D_LUT2D = [
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3],  # noqa: E501
     [0, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4],
 ]
+# fmt: on
 
 
 def lookup_d_value(rdcode: int, cvalue: int) -> int:
@@ -113,7 +115,7 @@ FILTER_OUTPUT_OFFSET_LUT = [
     None,
     None,
     None,
-    None
+    None,
 ]
 
 
@@ -562,3 +564,449 @@ class EBaqMode(enum.IntEnum):
     FDBAQ_MODE_0 = 12
     FDBAQ_MODE_1 = 13
     FDBAQ_MODE_2 = 14
+
+
+class EBrcCode(enum.IntEnum):
+    """BRC codes."""
+
+    BRC0 = 0
+    BRC1 = 1
+    BRC2 = 2
+    BRC3 = 3
+    BRC4 = 4
+
+
+# S1-IF-ASD-PL-0007 section 5.2.1 Table 5.2-1
+# Simple Reconstruction Parameter Values A, B
+SRM_LUT_A = {
+    EBaqMode.BAQ3: [3.0000, 3.0000, 3.1200, 3.5500],
+    EBaqMode.BAQ4: [7.0000, 7.0000, 7.0000, 7.1700, 7.4000, 7.7600],
+    EBaqMode.BAQ5: [
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.4400,
+        15.5600,
+        16.1100,
+        16.3800,
+        16.6500,
+    ],
+}
+
+
+# S1-IF-ASD-PL-0007 section 5.2.1 Table 5.2-1
+# Simple Reconstruction Parameter Values A, B
+SRM_LUT_B = {
+    EBrcCode.BRC0: [3.0000, 3.0000, 3.1600, 3.5300],
+    EBrcCode.BRC1: [4.0000, 4.0000, 4.0800, 4.3700],
+    EBrcCode.BRC2: [6.0000, 6.0000, 6.0000, 6.1500, 6.5000, 6.8800],
+    EBrcCode.BRC3: [9.0000, 9.0000, 9.0000, 9.0000, 9.3600, 9.5000, 10.1000],
+    EBrcCode.BRC4: [
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.0000,
+        15.2200,
+        15.5000,
+        16.0500,
+    ],
+}
+
+
+# S1-IF-ASD-PL-0007 section 5.2.2.1 Table 5.2-2
+# Normalised Reconstruction Levels
+BAQ_NRL_LUT = {
+    EBaqMode.BAQ3: [0.2490, 0.7681, 1.3655, 2.1864],
+    EBaqMode.BAQ4: [
+        0.1290,
+        0.3900,
+        0.6601,
+        0.9471,
+        1.2623,
+        1.6261,
+        2.0793,
+        2.7467,
+    ],
+    EBaqMode.BAQ5: [
+        0.0660,
+        0.1985,
+        0.3320,
+        0.4677,
+        0.6061,
+        0.7487,
+        0.8964,
+        1.0510,
+        1.2143,
+        1.3896,
+        1.5800,
+        1.7914,
+        2.0329,
+        2.3234,
+        2.6971,
+        3.2692,
+    ],
+}
+
+
+# S1-IF-ASD-PL-0007 section 5.2.2.1 Table 5.2-2
+# Normalised Reconstruction Levels
+FDBAQ_NRL_LUT = {
+    EBrcCode.BRC0: [0.3637, 1.0915, 1.8208, 2.6406],
+    EBrcCode.BRC1: [0.3042, 0.9127, 1.5216, 2.1313, 2.8426],
+    EBrcCode.BRC2: [0.2305, 0.6916, 1.1528, 1.6140, 2.0754, 2.5369, 3.1191],
+    EBrcCode.BRC3: [
+        0.1702,
+        0.5107,
+        0.8511,
+        1.1916,
+        1.5321,
+        1.8726,
+        2.2131,
+        2.5536,
+        2.8942,
+        3.3744,
+    ],
+    EBrcCode.BRC4: [
+        0.1130,
+        0.3389,
+        0.5649,
+        0.7908,
+        1.0167,
+        1.2428,
+        1.4687,
+        1.6947,
+        1.9206,
+        2.1466,
+        2.3725,
+        2.5985,
+        2.8244,
+        3.0504,
+        3.2764,
+        3.6623,
+    ],
+}
+
+
+# S1-IF-ASD-PL-0007 section 5.2.2.2 Table 5.2-3
+# Sigma Factors
+SIGMA_FACTORS_LUT = [
+    0.00,
+    0.63,
+    1.25,
+    1.88,
+    2.51,
+    3.13,
+    3.76,
+    4.39,
+    5.01,
+    5.64,
+    6.27,
+    6.89,
+    7.52,
+    8.15,
+    8.77,
+    9.40,
+    10.03,
+    10.65,
+    11.28,
+    11.91,
+    12.53,
+    13.16,
+    13.79,
+    14.41,
+    15.04,
+    15.67,
+    16.29,
+    16.92,
+    17.55,
+    18.17,
+    18.80,
+    19.43,
+    20.05,
+    20.68,
+    21.31,
+    21.93,
+    22.56,
+    23.19,
+    23.81,
+    24.44,
+    25.07,
+    25.69,
+    26.32,
+    26.95,
+    27.57,
+    28.20,
+    28.83,
+    29.45,
+    30.08,
+    30.71,
+    31.33,
+    31.96,
+    32.59,
+    33.21,
+    33.84,
+    34.47,
+    35.09,
+    35.72,
+    36.35,
+    36.97,
+    37.60,
+    38.23,
+    38.85,
+    39.48,
+    40.11,
+    40.73,
+    41.36,
+    41.99,
+    42.61,
+    43.24,
+    43.87,
+    44.49,
+    45.12,
+    45.75,
+    46.37,
+    47.00,
+    47.63,
+    48.25,
+    48.88,
+    49.51,
+    50.13,
+    50.76,
+    51.39,
+    52.01,
+    52.64,
+    53.27,
+    53.89,
+    54.52,
+    55.15,
+    55.77,
+    56.40,
+    57.03,
+    57.65,
+    58.28,
+    58.91,
+    59.53,
+    60.16,
+    60.79,
+    61.41,
+    62.04,
+    62.98,
+    64.24,
+    65.49,
+    66.74,
+    68.00,
+    69.25,
+    70.50,
+    71.76,
+    73.01,
+    74.26,
+    75.52,
+    76.77,
+    78.02,
+    79.28,
+    80.53,
+    81.78,
+    83.04,
+    84.29,
+    85.54,
+    86.80,
+    88.05,
+    89.30,
+    90.56,
+    91.81,
+    93.06,
+    94.32,
+    95.57,
+    96.82,
+    98.08,
+    99.33,
+    100.58,
+    101.84,
+    103.09,
+    104.34,
+    105.60,
+    106.85,
+    108.10,
+    109.35,
+    110.61,
+    111.86,
+    113.11,
+    114.37,
+    115.62,
+    116.87,
+    118.13,
+    119.38,
+    120.63,
+    121.89,
+    123.14,
+    124.39,
+    125.65,
+    126.90,
+    128.15,
+    129.41,
+    130.66,
+    131.91,
+    133.17,
+    134.42,
+    135.67,
+    136.93,
+    138.18,
+    139.43,
+    140.69,
+    141.94,
+    143.19,
+    144.45,
+    145.70,
+    146.95,
+    148.21,
+    149.46,
+    150.71,
+    151.97,
+    153.22,
+    154.47,
+    155.73,
+    156.98,
+    158.23,
+    159.49,
+    160.74,
+    161.99,
+    163.25,
+    164.50,
+    165.75,
+    167.01,
+    168.26,
+    169.51,
+    170.77,
+    172.02,
+    173.27,
+    174.53,
+    175.78,
+    177.03,
+    178.29,
+    179.54,
+    180.79,
+    182.05,
+    183.30,
+    184.55,
+    185.81,
+    187.06,
+    188.31,
+    189.57,
+    190.82,
+    192.07,
+    193.33,
+    194.58,
+    195.83,
+    197.09,
+    198.34,
+    199.59,
+    200.85,
+    202.10,
+    203.35,
+    204.61,
+    205.86,
+    207.11,
+    208.37,
+    209.62,
+    210.87,
+    212.13,
+    213.38,
+    214.63,
+    215.89,
+    217.14,
+    218.39,
+    219.65,
+    220.90,
+    222.15,
+    223.41,
+    224.66,
+    225.91,
+    227.17,
+    228.42,
+    229.67,
+    230.93,
+    232.18,
+    233.43,
+    234.69,
+    235.94,
+    237.19,
+    238.45,
+    239.70,
+    240.95,
+    242.21,
+    243.46,
+    244.71,
+    245.97,
+    247.22,
+    248.47,
+    249.73,
+    250.98,
+    252.23,
+    253.49,
+    254.74,
+    255.99,
+    255.99,
+]
+
+
+@lru_cache()  # COMPATIBILITY: parentheses are not needed in Python >= 3.8
+def get_baq_lut(baqmode: EBaqMode, thidx: int, dtype="float32"):
+    """Return the BAQ reconstruction look-up table (LUT)."""
+    import numpy as np
+
+    baqmode = EBaqMode(baqmode)
+    if baqmode not in {EBaqMode.BAQ3, EBaqMode.BAQ4, EBaqMode.BAQ5}:
+        raise ValueError(f"Unexpected BAQ mode: {baqmode}")
+    if not (0 <= thidx < 256):
+        raise ValueError(f"Unexpected thidx value: {thidx}")
+
+    nbits = baqmode.value
+    lut = np.empty(2**nbits, dtype=np.float64)
+    n = 2 ** (nbits - 1)
+
+    if thidx < n:
+        lut[: n - 1] = np.arange(n - 1, dtype=np.float64)
+        lut[n - 1] = SRM_LUT_A[baqmode][thidx]
+    else:
+        lut[:n] = np.asarray(BAQ_NRL_LUT[baqmode]) * SIGMA_FACTORS_LUT[thidx]
+    lut[n:] = -lut[:n]
+
+    return lut.astype(dtype)
+
+
+BRC_SIZE = {
+    EBrcCode.BRC0: 4,
+    EBrcCode.BRC1: 5,
+    EBrcCode.BRC2: 7,
+    EBrcCode.BRC3: 10,
+    EBrcCode.BRC4: 16,
+}
+
+
+@lru_cache()  # COMPATIBILITY: parentheses are not needed in Python >= 3.8
+def get_fdbaq_lut(brc: EBrcCode, thidx: int, dtype="float32"):
+    """Return the FDBAQ reconstruction look-up table (LUT)."""
+    import numpy as np
+
+    brc = EBrcCode(brc)
+    if not (0 <= thidx < 256):
+        raise ValueError(f"Unexpected thidx value: {thidx}")
+
+    n = BRC_SIZE[brc]
+    lutsize = 2 * n
+    lut = np.empty(lutsize, dtype=np.float64)
+
+    m = len(SRM_LUT_B[brc]) - 1
+    if thidx <= m:
+        lut[: n - 1] = np.arange(n - 1, dtype=np.float64)
+        lut[n - 1] = SRM_LUT_B[brc][thidx]
+    else:
+        lut[:n] = np.asarray(FDBAQ_NRL_LUT[brc]) * SIGMA_FACTORS_LUT[thidx]
+    lut[n:] = -lut[:n]
+
+    return lut.astype(dtype)
