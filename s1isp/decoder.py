@@ -291,7 +291,12 @@ def decode_stream(
 
             # -- Radar Sample Count Service
             rscs = secondary_header.radar_sample_count_service
-            assert 2 * rscs.number_of_quads == rcss.swl_n3rx_samples
+            # See S1-IF-ASD-PL-0007, section 3.2.5.11
+            if rcss.ses_sbb_message.signal_type <= 7:
+                assert 2 * rscs.number_of_quads == rcss.swl_n3rx_samples, (
+                    f"number_of_quads: {rscs.number_of_quads}, "
+                    f"swl_n3rx_samples: {rcss.swl_n3rx_samples}"
+                )
 
             # -- user data
             # TODO: decode science data

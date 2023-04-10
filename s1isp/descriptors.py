@@ -607,11 +607,11 @@ class RadarConfigurationSupportService:
         num = rdinfo.decimation_ratio.numerator
         den = rdinfo.decimation_ratio.denominator
         nf = rdinfo.filter_length
-        filter_output_offset = 80 + nf / 4
+        filter_output_offset = 80 + nf // 4
         assert filter_output_offset == lookup_filter_output_offset(rdcode)
-        b = 2 * self.swst - filter_output_offset - 17
+        b = 2 * self.swl - filter_output_offset - 17
         # WARNING: not sure if it is a truncation or a rounding
-        c = int(b - den * int(b / den))
+        c = b - den * int(b / den)
         d = lookup_d_value(rdcode, c)
         # WARNING: not sure if it is a truncation or a rounding
         return 2 * (num * int(b / den) + d + 1)
