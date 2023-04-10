@@ -39,6 +39,20 @@ def noise_ref_data():
 
 
 @pytest.fixture
+def echo_data():
+    filename = DATAROOT / "000408-echo.dat"
+    with open(filename, "rb") as fd:
+        return fd.read()
+
+
+@pytest.fixture
+def echo_ref_data():
+    # keys: "primary_header", "secondary_header", "udf"
+    filename = DATAROOT / "000408-echo.npz"
+    return dict(np.load(filename, allow_pickle=True))
+
+
+@pytest.fixture
 def fdbaq_reconstruction_lut():
     filename = DATAROOT / "reconstruction-lut.json"
     with open(filename) as fd:

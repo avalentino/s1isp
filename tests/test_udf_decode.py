@@ -1,4 +1,4 @@
-"""Tests for ISP iser data field decoding."""
+"""Tests for ISP user data field decoding."""
 
 import bpack
 import numpy as np
@@ -216,3 +216,21 @@ def test_decode_noise(noise_data, noise_ref_data):
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
     data = decode_ud(noise_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, noise_ref_data["udf"])
+
+
+def test_decode_echo(echo_data, echo_ref_data):
+    shdata = echo_data[PHSIZE : PHSIZE + SHSIZE]
+    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+
+    rcss = secondary_header.radar_configuration_support_service
+    assert rcss.ses_sbb_message.signal_type == ESesSignalType.echo
+
+    nq = secondary_header.radar_sample_count_service.number_of_quads
+    baqmod = rcss.baq_mode
+    tstmod = secondary_header.fixed_ancillary_data_service.test_mode
+    data = decode_ud(echo_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
+    np.testing.assert_allclose(data.real, echo_ref_data["udf"].real, atol=2e-6)
+    np.testing.assert_allclose(data.imag, echo_ref_data["udf"].imag, atol=2e-6)
+    np.testing.assert_allclose(
+        np.abs(data), np.abs(echo_ref_data["udf"]), atol=3e-6
+    )

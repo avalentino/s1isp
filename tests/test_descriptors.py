@@ -43,3 +43,19 @@ def test_noise(noise_data, noise_ref_data):
 
     rcss = secondary_header.radar_configuration_support_service
     assert rcss.ses_sbb_message.signal_type == ESesSignalType.noise
+
+
+def test_echo(echo_data, echo_ref_data):
+    phdata = echo_data[:PHSIZE]
+    shdata = echo_data[PHSIZE : PHSIZE + SHSIZE]
+
+    primary_header = PacketPrimaryHeader.frombytes(phdata)
+    assert primary_header == echo_ref_data["primary_header"]
+
+    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+    assert secondary_header == echo_ref_data["secondary_header"]
+
+    assert primary_header.packet_data_length + 1 == len(echo_data) - PHSIZE
+
+    rcss = secondary_header.radar_configuration_support_service
+    assert rcss.ses_sbb_message.signal_type == ESesSignalType.echo
