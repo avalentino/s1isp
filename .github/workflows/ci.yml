@@ -1,0 +1,49 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        include:
+        - os: windows-latest
+          python-version: '3.x'
+        - os: macos-latest
+          python-version: '3.x'
+
+    runs-on: ${{ matrix.os }}        
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install build flake8 pydocstyle isort black pytest
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        python -m flake8 --count --statistics s1isp
+        python -m pydocstyle --count s1isp
+        python -m isort --check s1isp
+        python -m black --check s1isp
+    - name: Build
+      run: |
+        python -m build
+    - name: Install
+      shell: bash
+      run: |
+        python -m pip install dist/s1isp*.whl
+    - name: Test with pytest
+      run: |
+        cd dist
+        python -m pytest ../tests
