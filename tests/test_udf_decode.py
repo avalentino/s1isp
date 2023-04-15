@@ -10,7 +10,7 @@ from s1isp.descriptors import (
     PacketPrimaryHeader,
     PacketSecondaryHeader,
 )
-from .test_huffman import (
+from test_huffman import (
     get_huffman_data,
     BRC,
     HCODE_LUTS,
