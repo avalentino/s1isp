@@ -299,7 +299,7 @@ def huffman_decode(
     nwords = int(np.ceil((idx - idx0) / 16))
     idx = idx0 + nwords * 16
 
-    assert idx == len(bits), f"{idx = }, {len(bits) = }"
+    assert idx == len(bits), f"idx = {idx}, len(bits) = {len(bits)}"
 
     return ie, io, qe, qo, brc_data, thidx_data
 
