@@ -207,8 +207,28 @@ def decode_stream(
     skip: Optional[int] = None,
     maxcount: Optional[int] = None,
     bytes_offset: int = 0,
-):
-    """Decode packet headers."""
+) -> Tuple[List[DecodedDataItem], List[int], List[SubCommItem]]:
+    """Decode packet headers.
+
+    :param filename:
+        path to the L0 data component file.
+    :param skip: int, optional
+        number of ISPs to skip (starting form `byte_offset`).
+        Default: 0,
+    :param maxcount: int, optional
+        maximum number of ISPs to decode (starting form `skip`).
+        Default: all remainimg ISPs in the file.
+    :param byte_offset: int, optional
+        offset in bytes, from the beginning of the binary file, to the
+        first ISP (if the `skip` parameter is specified the count starts
+        at this offset).
+        Default: 0.
+    :returns:
+        a 2 items tuple containing:
+
+        * the decoded ISPs in form of (nested) dataclass structures
+        * a list of :class:`SubCommItem`s containing sub-commutated data
+    """
     primary_header_size = bpack.calcsize(
         PacketPrimaryHeader, bpack.EBaseUnits.BYTES
     )
@@ -219,6 +239,7 @@ def decode_stream(
     packet_counter: int = 0
     records: List[DecodedDataItem] = []
     subcom_data_records: List[SubCommItem] = []
+    offsets: List[int] = []
     pbar = tqdm.tqdm(unit=" packets", desc="decoded")
     with open(filename, "rb") as fd, pbar:
         if bytes_offset:
@@ -226,6 +247,9 @@ def decode_stream(
             fd.seek(bytes_offset)
 
         while fd:
+            # TODO: it would be probably faster to use a local variable
+            offsets.append(fd.tell())
+
             # primary header
             data = fd.read(primary_header_size)
             if len(data) == 0 or (maxcount and len(records) > maxcount):
@@ -309,7 +333,7 @@ def decode_stream(
 
             pbar.update()
 
-    return records, subcom_data_records
+    return records, offsets, subcom_data_records
 
 
 def _sas_to_dict(sas):

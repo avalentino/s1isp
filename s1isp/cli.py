@@ -60,7 +60,7 @@ def dump_records(
     _log.info(f"Start decoding: '{filename}' ...")
     t0 = datetime.datetime.now()
 
-    records, subcomm_data_records = decode_stream(
+    records, offsets, subcomm_data_records = decode_stream(
         filename,
         skip=skip,
         maxcount=maxcount,
@@ -72,6 +72,7 @@ def dump_records(
     if output_format == EOutputFormat.PICKLE:
         data = dict(
             records=records,
+            offsets=offsets,
             subcomm_data_records=subcomm_data_records,
         )
         with open(outfile, "wb") as fd:
@@ -185,6 +186,7 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     parser.add_argument(
         "--skip",
         type=int,
+        default=0,
         help="number of ISPs to skip at the beginning of the file",
     )
     parser.add_argument(
@@ -195,6 +197,7 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     parser.add_argument(
         "--bytes_offset",
         type=int,
+        default=0,
         help="number bytes to skip at the beginning of the file",
     )
     parser.add_argument(
