@@ -212,8 +212,7 @@ class DatationService:
     coarse_time: T["u32"] = 0
     fine_time: T["u16"] = 0
 
-    @property
-    def fine_time_sec(self) -> float:
+    def get_fine_time_sec(self) -> float:
         """Fine time [s] (S1-IF-ASD-PL-0007, section 3.2.1.2).
 
         The Fine Time represents the subsecond time stamp of the Space Packet.
@@ -378,7 +377,7 @@ class CountersService:
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
 class SasSsbData:
-    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.15).
+    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
 
     The SAS SSB Data field indicates the actual configuration of the
     SAR Antenna Subsystem (SAS).
@@ -505,8 +504,7 @@ class RadarConfigurationSupportService:
     See S1-IF-ASD-PL-0007, section 3.2.5.11.
     """
 
-    @property
-    def baq_block_len_samples(self) -> int:
+    def get_baq_block_len_samples(self) -> int:
         """Length of the BAQ data block (S1-IF-ASD-PL-0007, section 3.2.5.3).
 
         The BAQ Block Length is the number of complex radar samples per
@@ -520,18 +518,15 @@ class RadarConfigurationSupportService:
         """Return information associated to Range Decimation."""
         return lookup_range_decimation_info(self.range_decimation)
 
-    @property
-    def rx_gain_db(self) -> float:
+    def get_rx_gain_db(self) -> float:
         """Rx Gain in dB (S1-IF-ASD-PL-0007, section 3.2.5.5)."""
         return -0.5 * self.rx_gain
 
-    @property
-    def tx_ramp_rate_hz_per_sec(self) -> float:
+    def get_tx_ramp_rate_hz_per_sec(self) -> float:
         """Tx Pulse Ramp Rate [Hz/s] (S1-IF-ASD-PL-0007, section 3.2.5.6)."""
         return self.tx_ramp_rate * REF_FREQ**2 / 2**21
 
-    @property
-    def tx_pulse_start_freq_hz(self) -> float:
+    def get_tx_pulse_start_freq_hz(self) -> float:
         """Tx Pulse Start Frequency [Hz].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.7).
@@ -541,13 +536,11 @@ class RadarConfigurationSupportService:
             + self.tx_pulse_start_freq * REF_FREQ / 2**14
         )
 
-    @property
-    def tx_pulse_length_sec(self) -> float:
+    def get_tx_pulse_length_sec(self) -> float:
         """Tx Pulse Length [s] (S1-IF-ASD-PL-0007, section 3.2.5.8)."""
         return self.tx_pulse_length / REF_FREQ * 1e6
 
-    @property
-    def tx_pulse_length_samples(self) -> int:
+    def get_tx_pulse_length_samples(self) -> int:
         """Tx Pulse Length in samples in the space packet (N3_Tx).
 
         Number of complex Tx pulse samples (I/Q pairs) after the decimation
@@ -559,32 +552,42 @@ class RadarConfigurationSupportService:
         f_dec = rdinfo.sampling_frequency
         return math.ceil(self.tx_pulse_length_sec * f_dec)
 
-    @property
-    def pri_sec(self) -> float:
+    def get_pri_sec(self) -> float:
         """Pulse Repetition Interval [s].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.10.
         """
         return self.pri / REF_FREQ * 1e6
 
-    @property
-    def swst_sec(self) -> float:
+    def get_swst_sec(self) -> float:
         """Return the Sampling Window Start Time [s].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.11.
         """
         return self.swst / REF_FREQ * 1e6
 
-    @property
-    def swl_sec(self) -> float:
+    def get_delta_t_suppr_sec(self) -> float:
+        """Duration of teh transient of teh decimation filter [s].
+
+        See (S1-IF-ASD-PL-0007, section 3.2.5.11).
+        """
+        return 320 / 8 / REF_FREQ * 1e6
+
+    def get_swst_after_decimation_sec(self) -> float:
+        """Return the Sampling Window Start Time [s].
+
+        See S1-IF-ASD-PL-0007, section 3.2.5.11.
+        """
+        return (self.swst + 320 / 8) / REF_FREQ * 1e6
+
+    def get_swl_sec(self) -> float:
         """Return the Sampling Window Length [s].
 
         See (S1-IF-ASD-PL-0007, section 3.2.5.12).
         """
         return self.swl / REF_FREQ * 1e6
 
-    @property
-    def swl_n3rx_samples(self) -> int:  # TODO: check
+    def get_swl_n3rx_samples(self) -> int:  # TODO: check
         """Return the sampling Window Length in samples after the decimation.
 
         Number of complex samples (I/Q pairs) after decimation (i.e. in the
@@ -604,6 +607,14 @@ class RadarConfigurationSupportService:
         d = lookup_d_value(rdcode, c)
         # WARNING: not sure if it is a truncation or a rounding
         return 2 * (num * int(b / den) + d + 1)
+
+    def get_swl_n3rx_sec(self) -> int:  # TODO: check
+        """Return the sampling Window Length in seconds after the decimation.
+
+        See S1-IF-ASD-PL-0007, section 3.2.5.12.
+        """
+        fs = self.get_range_decimation_info().sampling_frequency
+        return self.get_swl_n3rx_samples() / fs
 
 
 @bpack.bs.decoder
