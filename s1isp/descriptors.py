@@ -6,7 +6,7 @@ Space Packet Protocol Data Unit" document (S1-IF-ASD-PL-0007) issue 13.
 
 import enum
 import math
-from typing import ClassVar
+from typing import ClassVar, Union
 
 import bpack
 import bpack.bs
@@ -376,6 +376,47 @@ class CountersService:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
+class SasImgData:
+    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.1).
+
+    The SAS SSB Data field indicates the actual configuration of the
+    SAR Antenna Subsystem (SAS).
+    """
+
+    ssb_flag: bool = False
+    polarization: ESasPolarization = bpack.field(
+        size=3, default=ESasPolarization.h_tx_only
+    )
+    temperature_compensation: ETemperatureCompensation = bpack.field(
+        size=2, default=ETemperatureCompensation.fe_off_ta_off
+    )
+    elevation_beam_address: T["u4"] = bpack.field(default=0, offset=8)
+    azimuth_beam_address: T["u10"] = bpack.field(default=0, offset=14)
+
+
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class SasCalData:
+    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.2).
+
+    The SAS SSB Data field indicates the actual configuration of the
+    SAR Antenna Subsystem (SAS).
+    """
+
+    ssb_flag: bool = False
+    polarization: ESasPolarization = bpack.field(
+        size=3, default=ESasPolarization.h_tx_only
+    )
+    temperature_compensation: ETemperatureCompensation = bpack.field(
+        size=2, default=ETemperatureCompensation.fe_off_ta_off
+    )
+    sas_test: bool = bpack.field(default=0, offset=8)
+    cal_type: T["u3"] = bpack.field(default=0)
+    calibration_beam_address: T["u10"] = bpack.field(default=0, offset=14)
+
+
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
 class SasSsbData:
     """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
 
@@ -393,12 +434,37 @@ class SasSsbData:
     _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
     _beam_address: T["u10"] = bpack.field(default=0, offset=14)
 
-    def get_elevation_beam_address(self) -> int:
+    def get_sas_data(self) -> Union[SasImgData, SasCalData]:
+        """Return the specific SAS data record accordingthe sas_flag.
+
+        If the `ssb_flag` is True than and `SasSsbDataImaging` instance is
+        returned, otherwise a `SasSsbDataCal` instance is returned.
+        """
+        if not self.ssb_flag:
+            return SasImgData(
+                self.ssb_flag,
+                self.polarization,
+                self.temperature_compensation,
+                self.get_elevation_beam_address(),
+                self.get_azimuth_beam_address(),
+            )
+        else:
+            return SasCalData(
+                self.ssb_flag,
+                self.polarization,
+                self.temperature_compensation,
+                self.get_sas_test(),
+                self.get_cal_type(),
+                self.get_calibration_beam_address(),
+            )
+
+    def get_elevation_beam_address(self, check: bool = True) -> int:
         """Return the elevation beam address code.
 
-        Please note that if ssb_flag=True an TypeError is raised.
+        Please note that if `ssb_flag` is `True` and `check` is `True` then
+        a TypeError is raised.
         """
-        if self.ssb_flag:
+        if check and self.ssb_flag:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=True have no "
                 "elevation_beam_address field"
@@ -406,12 +472,13 @@ class SasSsbData:
         else:
             return self._dynamic_data
 
-    def get_azimuth_beam_address(self) -> int:
+    def get_azimuth_beam_address(self, check: bool = True) -> int:
         """Return the azimuth beam address code.
 
-        Please note that if ssb_flag=True an TypeError is raised.
+        Please note that if `ssb_flag` is `True` and `check` is `True` then
+        a TypeError is raised.
         """
-        if self.ssb_flag:
+        if check and self.ssb_flag:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=True have no "
                 "azimuth_beam_address field"
@@ -419,42 +486,45 @@ class SasSsbData:
         else:
             return self._beam_address
 
-    def get_sas_test(self) -> ESasTestMode:
+    def get_sas_test(self, check: bool = True) -> ESasTestMode:
         """Return the SAS Test flag.
 
-        Please note that if ssb_flag=False an TypeError is raised.
+        Please note that if `ssb_flag` is `False` and `check` is `True` then
+        an TypeError is raised.
         """
-        if self.ssb_flag:
-            return ESasTestMode(self._dynamic_data & 0b10000000)
-        else:
+        if check and not self.ssb_flag:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no sas_test field"
             )
+        else:
+            return ESasTestMode((self._dynamic_data >> 3) & 0b0000001)
 
-    def get_cal_type(self) -> ESasCalType:
+    def get_cal_type(self, check: bool = True) -> ESasCalType:
         """Return the calibration type code.
 
-        Please note that if ssb_flag=False an TypeError is raised.
+        Please note that if `ssb_flag` is `False` and `check` is `True` then
+        an TypeError is raised.
         """
-        if self.ssb_flag:
-            return ESasCalType(self._dynamic_data & 0b01110000)
-        else:
+        if check and not self.ssb_flag:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no cal_type field"
             )
+        else:
+            return ESasCalType(self._dynamic_data & 0b00000111)
 
-    def get_calibration_beam_address(self) -> int:
+    def get_calibration_beam_address(self, check: bool = True) -> int:
         """Return the calibration beam address code.
 
-        Please note that if ssb_flag=True an TypeError is raised.
+        Please note that if `ssb_flag` is `False` and `check` is `True` then
+        an TypeError is raised.
         """
-        if self.ssb_flag:
-            return self._beam_address
-        else:
+        if check and not self.ssb_flag:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no "
                 "calibration_beam_address field"
             )
+        else:
+            return self._beam_address
 
 
 @bpack.bs.decoder

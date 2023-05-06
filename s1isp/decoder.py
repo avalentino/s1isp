@@ -3,7 +3,7 @@
 import io
 import enum
 import logging
-from typing import List, NamedTuple, Optional, Type
+from typing import List, NamedTuple, Optional, Tuple, Type
 
 import tqdm
 import bpack
@@ -343,20 +343,18 @@ def _sas_to_dict(sas):
     keys = [key for key in sas_data if key.startswith("_")]
     for key in keys:
         sas_data.pop(key)
-    if sas.ssb_flag:
-        sas_data["elevation_beam_address"] = None
-        sas_data["azimuth_beam_address"] = None
-        sas_data["sas_test"] = sas.get_sas_test()
-        sas_data["cal_type"] = sas.get_cal_type()
-        sas_data[
-            "calibration_beam_address"
-        ] = sas.get_calibration_beam_address()
-    else:
-        sas_data["elevation_beam_address"] = sas.get_elevation_beam_address()
-        sas_data["azimuth_beam_address"] = sas.get_azimuth_beam_address()
-        sas_data["sas_test"] = None
-        sas_data["cal_type"] = None
-        sas_data["calibration_beam_address"] = None
+
+    sas_data["elevation_beam_address"] = sas.get_elevation_beam_address(
+        check=False
+    )
+    sas_data["azimuth_beam_address"] = sas.get_azimuth_beam_address(
+        check=False
+    )
+    sas_data["sas_test"] = sas.get_sas_test(check=False)
+    sas_data["cal_type"] = sas.get_cal_type(check=False)
+    sas_data["calibration_beam_address"] = sas.get_calibration_beam_address(
+        check=False
+    )
 
     return sas_data
 
