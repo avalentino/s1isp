@@ -4,7 +4,7 @@ from s1isp.constants_and_luts import BRC_SIZE, get_fdbaq_lut
 
 
 def test_fdbaq_econstruction_lut(fdbaq_reconstruction_lut):
-    TOLL = 1e-16
+    toll = 1e-16
     for brc, brc_lut in fdbaq_reconstruction_lut.items():
         brc = int(brc)
         for thidx, thidx_lut in brc_lut.items():
@@ -17,4 +17,4 @@ def test_fdbaq_econstruction_lut(fdbaq_reconstruction_lut):
 
                 val = lut[ucode]
 
-                assert abs(ref - val) < TOLL
+                assert abs(ref - val) < toll

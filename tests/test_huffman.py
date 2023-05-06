@@ -3,11 +3,10 @@
 import itertools
 from typing import Optional
 
-import pytest
 import numpy as np
+import pytest
 
 from s1isp import _huffman as huffman
-
 
 NSAMPLES = 128
 

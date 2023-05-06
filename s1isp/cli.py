@@ -280,7 +280,7 @@ def main(*argv):
             enum_value=args.enum_value,
             force=args.force,
         )
-    except Exception as exc:  # noqa: B902
+    except Exception as exc:
         _log.critical(
             "unexpected exception caught: {!r} {}".format(
                 type(exc).__name__, exc

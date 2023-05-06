@@ -3,6 +3,8 @@
 import bpack
 import numpy as np
 import bitstruct as bs
+from test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
+from test_huffman import NSAMPLES as BLOCKSIZE
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
 from s1isp.descriptors import (
@@ -10,14 +12,6 @@ from s1isp.descriptors import (
     PacketPrimaryHeader,
     PacketSecondaryHeader,
 )
-from test_huffman import (
-    get_huffman_data,
-    BRC,
-    HCODE_LUTS,
-    HUFFMAN_CODES,
-    NSAMPLES as BLOCKSIZE,
-)
-
 
 PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
 SHSIZE = bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES)
@@ -49,8 +43,8 @@ def test_align_quads_nq(nq: int = 100):
     out = align_quads(ie, io, qe, qo, nq)
     np.testing.assert_array_equal(out, cdata)
 
-    out = align_quads(ie, io, qe, qo, nq//2)
-    np.testing.assert_array_equal(out, cdata[:cdata.size//2])
+    out = align_quads(ie, io, qe, qo, nq // 2)
+    np.testing.assert_array_equal(out, cdata[: cdata.size // 2])
 
 
 def test_align_quads_out(nq: int = 100):
@@ -68,8 +62,8 @@ def make_bypass(nbits: int = 10):
     nq = n_flt_smaples // 4
 
     fdata = np.zeros(n_flt_smaples, dtype=np.float32)
-    fdata[:2**(nbits-1)] = np.arange(2**(nbits-1))
-    fdata[2**(nbits-1):] = -fdata[:2**(nbits-1)]
+    fdata[: 2 ** (nbits - 1)] = np.arange(2 ** (nbits - 1))
+    fdata[2 ** (nbits - 1) :] = -fdata[: 2 ** (nbits - 1)]
     cdata = np.frombuffer(fdata.data, dtype=np.complex64)
     idata = np.arange(n_flt_smaples, dtype=np.int16)
 
@@ -106,15 +100,13 @@ def test_bypass_decode_out(nbits=10):
 
 
 def get_fdbaq_channel(
-    blocksize: int = BLOCKSIZE, samples: int = None, header=False,
+    blocksize: int = BLOCKSIZE, samples: int = None, header=False
 ):
     nblocks = len(HUFFMAN_CODES)
     if samples is None:
         samples = nblocks * blocksize
     if header == "thidx":
-        thidx = np.arange(
-            blocksize, blocksize + nblocks, dtype=np.uint8
-        )
+        thidx = np.arange(blocksize, blocksize + nblocks, dtype=np.uint8)
         thidx_bits = np.unpackbits(thidx[:, None], axis=1)
     else:
         thidx = None
@@ -124,7 +116,7 @@ def get_fdbaq_channel(
     values = []
     for bidx, brc in enumerate(HUFFMAN_CODES):
         brcs.append(brc)
-        if header == 'thidx':
+        if header == "thidx":
             bits.extend(thidx_bits[bidx])
         elif header:
             bits.extend(BRC[brc])
@@ -200,7 +192,7 @@ def test_decode_txcal(txcal_data, txcal_ref_data):
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
-    data = decode_ud(txcal_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
+    data = decode_ud(txcal_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, txcal_ref_data["udf"])
 
 
@@ -214,7 +206,7 @@ def test_decode_noise(noise_data, noise_ref_data):
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
-    data = decode_ud(noise_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
+    data = decode_ud(noise_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, noise_ref_data["udf"])
 
 
@@ -228,7 +220,7 @@ def test_decode_echo(echo_data, echo_ref_data):
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode
     tstmod = secondary_header.fixed_ancillary_data_service.test_mode
-    data = decode_ud(echo_data[PHSIZE + SHSIZE:], nq, baqmod, tstmod)
+    data = decode_ud(echo_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_allclose(data.real, echo_ref_data["udf"].real, atol=2e-6)
     np.testing.assert_allclose(data.imag, echo_ref_data["udf"].imag, atol=2e-6)
     np.testing.assert_allclose(
