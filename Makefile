@@ -40,10 +40,10 @@ coverage:
 	$(PYTHON) -m pytest --cov=$(PKGNAME) --cov-report=html --cov-report=term
 
 lint:
-	$(PYTHON) -m flake8 --count --statistics $(PKGNAME)
+	$(PYTHON) -m flake8 --count --statistics $(PKGNAME) tests
 	$(PYTHON) -m pydocstyle --count $(PKGNAME)
-	$(PYTHON) -m isort --check $(PKGNAME)
-	$(PYTHON) -m black --check $(PKGNAME)
+	$(PYTHON) -m isort --check $(PKGNAME) tests
+	$(PYTHON) -m black --check $(PKGNAME) tests
 
 api:
 	$(RM) -r docs/api
