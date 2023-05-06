@@ -3,9 +3,8 @@
 import json
 import pathlib
 
-import pytest
 import numpy as np
-
+import pytest
 
 DATAROOT = pathlib.Path(__file__).parent / "data"
 
@@ -21,7 +20,8 @@ def txcal_data():
 def txcal_ref_data():
     # keys: "primary_header", "secondary_header", "udf"
     filename = DATAROOT / "000008-txcal.npz"
-    return dict(np.load(filename, allow_pickle=True))
+    data = np.load(filename, allow_pickle=True)
+    return {k: v.item() if "header" in k else v for k, v in data.items()}
 
 
 @pytest.fixture
@@ -35,7 +35,8 @@ def noise_data():
 def noise_ref_data():
     # keys: "primary_header", "secondary_header", "udf"
     filename = DATAROOT / "000000-noise.npz"
-    return dict(np.load(filename, allow_pickle=True))
+    data = np.load(filename, allow_pickle=True)
+    return {k: v.item() if "header" in k else v for k, v in data.items()}
 
 
 @pytest.fixture
@@ -49,7 +50,8 @@ def echo_data():
 def echo_ref_data():
     # keys: "primary_header", "secondary_header", "udf"
     filename = DATAROOT / "000408-echo.npz"
-    return dict(np.load(filename, allow_pickle=True))
+    data = np.load(filename, allow_pickle=True)
+    return {k: v.item() if "header" in k else v for k, v in data.items()}
 
 
 @pytest.fixture
