@@ -6,7 +6,7 @@ Space Packet Protocol Data Unit" document (S1-IF-ASD-PL-0007) issue 13.
 
 import enum
 import math
-from typing import ClassVar, Union
+from typing import Union
 
 import bpack
 import bpack.bs
@@ -557,7 +557,7 @@ class RadarConfigurationSupportService:
         size=8, offset=24, default=0
     )
     rx_gain: T["u8"] = 0
-    tx_ramp_rate: T["i16"] = 0
+    tx_ramp_rate: T["u16"] = 0
     tx_pulse_start_freq: T["u16"] = 0
     tx_pulse_length: T["u24"] = 0
     # n. 3 bits pad
@@ -567,12 +567,6 @@ class RadarConfigurationSupportService:
     swl: T["u24"] = 0
     sas_sbb_message: SasSsbData = bpack.field(default_factory=SasSsbData)
     ses_sbb_message: SesSbbData = bpack.field(default_factory=SesSbbData)
-
-    delta_t_suppr_sec: ClassVar[float] = 320 / 8 / REF_FREQ * 1e6
-    """Return the duration of the decimation filter transiont [s].
-
-    See S1-IF-ASD-PL-0007, section 3.2.5.11.
-    """
 
     def get_baq_block_len_samples(self) -> int:
         """Length of the BAQ data block (S1-IF-ASD-PL-0007, section 3.2.5.3).
@@ -592,23 +586,32 @@ class RadarConfigurationSupportService:
         """Rx Gain in dB (S1-IF-ASD-PL-0007, section 3.2.5.5)."""
         return -0.5 * self.rx_gain
 
+    def _get_tx_ramp_rate_mhz_per_usec(self) -> float:
+        """Tx Pulse Ramp Rate [Hz/s] (S1-IF-ASD-PL-0007, section 3.2.5.6)."""
+        sign = 1 if self.tx_ramp_rate >> 15 else -1
+        value = self.tx_ramp_rate & 0b0111111111111111
+
+        return sign * (value * REF_FREQ**2 / 2**21)
+
     def get_tx_ramp_rate_hz_per_sec(self) -> float:
         """Tx Pulse Ramp Rate [Hz/s] (S1-IF-ASD-PL-0007, section 3.2.5.6)."""
-        return self.tx_ramp_rate * REF_FREQ**2 / 2**21
+        return self._get_tx_ramp_rate_mhz_per_usec() * 1e12
 
     def get_tx_pulse_start_freq_hz(self) -> float:
         """Tx Pulse Start Frequency [Hz].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.7).
         """
-        return 1.0e6 * (
-            self.tx_ramp_rate_hz_per_sec / (4 * REF_FREQ)
-            + self.tx_pulse_start_freq * REF_FREQ / 2**14
+        sign = 1 if self.tx_pulse_start_freq >> 15 else -1
+        value = self.tx_pulse_start_freq & 0b0111111111111111
+        return 1e6 * (
+            self._get_tx_ramp_rate_mhz_per_usec() / (4 * REF_FREQ)
+            + sign * value * REF_FREQ / 2**14
         )
 
     def get_tx_pulse_length_sec(self) -> float:
         """Tx Pulse Length [s] (S1-IF-ASD-PL-0007, section 3.2.5.8)."""
-        return self.tx_pulse_length / REF_FREQ * 1e6
+        return self.tx_pulse_length / REF_FREQ * 1e-6
 
     def get_tx_pulse_length_samples(self) -> int:
         """Tx Pulse Length in samples in the space packet (N3_Tx).
@@ -620,44 +623,44 @@ class RadarConfigurationSupportService:
         """
         rdinfo = self.get_range_decimation_info()
         f_dec = rdinfo.sampling_frequency
-        return math.ceil(self.tx_pulse_length_sec * f_dec)
+        return math.ceil(self.get_tx_pulse_length_sec() * f_dec)
 
     def get_pri_sec(self) -> float:
         """Pulse Repetition Interval [s].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.10.
         """
-        return self.pri / REF_FREQ * 1e6
+        return self.pri / REF_FREQ * 1e-6
 
     def get_swst_sec(self) -> float:
         """Return the Sampling Window Start Time [s].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.11.
         """
-        return self.swst / REF_FREQ * 1e6
+        return self.swst / REF_FREQ * 1e-6
 
     def get_delta_t_suppr_sec(self) -> float:
         """Duration of teh transient of teh decimation filter [s].
 
         See (S1-IF-ASD-PL-0007, section 3.2.5.11).
         """
-        return 320 / 8 / REF_FREQ * 1e6
+        return 320 / 8 / REF_FREQ * 1e-6
 
     def get_swst_after_decimation_sec(self) -> float:
         """Return the Sampling Window Start Time [s].
 
         See S1-IF-ASD-PL-0007, section 3.2.5.11.
         """
-        return (self.swst + 320 / 8) / REF_FREQ * 1e6
+        return (self.swst + 320 / 8) / REF_FREQ * 1e-6
 
     def get_swl_sec(self) -> float:
         """Return the Sampling Window Length [s].
 
         See (S1-IF-ASD-PL-0007, section 3.2.5.12).
         """
-        return self.swl / REF_FREQ * 1e6
+        return self.swl / REF_FREQ * 1e-6
 
-    def get_swl_n3rx_samples(self) -> int:  # TODO: check
+    def get_swl_n3rx_samples(self) -> int:
         """Return the sampling Window Length in samples after the decimation.
 
         Number of complex samples (I/Q pairs) after decimation (i.e. in the
@@ -678,7 +681,7 @@ class RadarConfigurationSupportService:
         # WARNING: not sure if it is a truncation or a rounding
         return 2 * (num * int(b / den) + d + 1)
 
-    def get_swl_n3rx_sec(self) -> int:  # TODO: check
+    def get_swl_n3rx_sec(self) -> int:
         """Return the sampling Window Length in seconds after the decimation.
 
         See S1-IF-ASD-PL-0007, section 3.2.5.12.

@@ -1,7 +1,10 @@
 """Tests for ISP headers decoding."""
 
+from fractions import Fraction
+
 import bpack
 import pytest
+from numpy import testing as npt
 
 from s1isp.descriptors import (
     ESesSignalType,
@@ -9,6 +12,7 @@ from s1isp.descriptors import (
     SasImgData,
     PacketPrimaryHeader,
     PacketSecondaryHeader,
+    RangeDecimationInfo,
 )
 
 PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
@@ -165,3 +169,69 @@ def test_echo_sas(echo_data, echo_ref_data):
     with pytest.raises(TypeError):
         sas.get_calibration_beam_address()
     assert sas.get_calibration_beam_address(check=False) == ref_az_beam_address
+
+
+def test_echo_datation_service(echo_data, echo_ref_data):
+    shdata = echo_data[PHSIZE : PHSIZE + SHSIZE]
+    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+
+    ds = secondary_header.datation_service
+    ref = echo_ref_data["secondary_header"].datation_service
+
+    assert ds.get_fine_time_sec() == ref.get_fine_time_sec()
+    npt.assert_allclose(ds.get_fine_time_sec(), 0.9439621)
+
+
+def test_echo_radar_configuration_support_service(echo_data, echo_ref_data):
+    shdata = echo_data[PHSIZE : PHSIZE + SHSIZE]
+    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+
+    rcss = secondary_header.radar_configuration_support_service
+    ref = echo_ref_data["secondary_header"].radar_configuration_support_service
+
+    assert rcss.get_baq_block_len_samples() == ref.get_baq_block_len_samples()
+    assert rcss.get_range_decimation_info() == ref.get_range_decimation_info()
+    assert rcss.get_rx_gain_db() == ref.get_rx_gain_db()
+    assert (
+        rcss.get_tx_ramp_rate_hz_per_sec() == ref.get_tx_ramp_rate_hz_per_sec()
+    )
+    assert (
+        rcss.get_tx_pulse_start_freq_hz() == ref.get_tx_pulse_start_freq_hz()
+    )
+    assert rcss.get_tx_pulse_length_sec() == ref.get_tx_pulse_length_sec()
+    assert (
+        rcss.get_tx_pulse_length_samples() == ref.get_tx_pulse_length_samples()
+    )
+    assert rcss.get_pri_sec() == ref.get_pri_sec()
+    assert rcss.get_swst_sec() == ref.get_swst_sec()
+    assert rcss.get_delta_t_suppr_sec() == ref.get_delta_t_suppr_sec()
+    assert (
+        rcss.get_swst_after_decimation_sec()
+        == ref.get_swst_after_decimation_sec()
+    )
+    assert rcss.get_swl_sec() == ref.get_swl_sec()
+    assert rcss.get_swl_n3rx_samples() == ref.get_swl_n3rx_samples()
+    assert rcss.get_swl_n3rx_sec() == ref.get_swl_n3rx_sec()
+
+    npt.assert_allclose(rcss.get_rx_gain_db(), -6.0)
+    npt.assert_allclose(rcss.get_tx_ramp_rate_hz_per_sec(), 1344932774550.9954)
+    npt.assert_allclose(rcss.get_tx_pulse_start_freq_hz(), -29704503.224123612)
+    npt.assert_allclose(rcss.get_tx_pulse_length_sec(), 4.4172432911548294e-05)
+    npt.assert_allclose(rcss.get_pri_sec(), 0.0005194923216780943)
+    npt.assert_allclose(rcss.get_swst_sec(), 0.00014042997218140596)
+    npt.assert_allclose(rcss.get_delta_t_suppr_sec(), 1.0656799254897057e-06)
+    npt.assert_allclose(
+        rcss.get_swst_after_decimation_sec(), 0.00014149565210689566
+    )
+    npt.assert_allclose(rcss.get_swl_sec(), 0.0003244462533153409)
+    npt.assert_allclose(rcss.get_swl_n3rx_sec(), 0.0003230708601615057)
+
+    assert rcss.get_baq_block_len_samples() == 256
+    assert rcss.get_range_decimation_info() == RangeDecimationInfo(
+        decimation_filer_band=59440000.0,
+        decimation_ratio=Fraction(4, 9),
+        filter_length=40,
+        swaths=["S3"],
+    )
+    assert rcss.get_tx_pulse_length_samples() == 2948
+    assert rcss.get_swl_n3rx_samples() == 21558
