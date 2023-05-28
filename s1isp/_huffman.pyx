@@ -1,6 +1,6 @@
 # cython: language_level=3, boundscheck=False
 
-"""Extension modile for Huffman decoding of Sentinel-1 RAW data."""
+"""Extension module for Huffman decoding of Sentinel-1 RAW data."""
 
 from libc.stdint cimport uint8_t
 
