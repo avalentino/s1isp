@@ -931,7 +931,7 @@ SIGMA_FACTORS_LUT = [
 ]
 
 
-@lru_cache()  # COMPATIBILITY: parentheses are not needed in Python >= 3.8
+@lru_cache
 def get_baq_lut(baqmode: EBaqMode, thidx: int, dtype="float32"):
     """Return the BAQ reconstruction look-up table (LUT)."""
     import numpy as np
@@ -965,7 +965,7 @@ BRC_SIZE = {
 }
 
 
-@lru_cache()  # COMPATIBILITY: parentheses are not needed in Python >= 3.8
+@lru_cache
 def get_fdbaq_lut(brc: EBrcCode, thidx: int, dtype="float32"):
     """Return the FDBAQ reconstruction look-up table (LUT)."""
     import numpy as np
