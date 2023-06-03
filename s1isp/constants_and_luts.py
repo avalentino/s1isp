@@ -10,8 +10,7 @@ from typing import List
 from fractions import Fraction
 from functools import lru_cache
 
-REF_FREQ = 37.53472224  # [MHz]
-SYNK_MARKER = 0x352EF853  # (S1-IF-ASD-PL-0007, section 3.2.2.1)
+from .constants import REF_FREQ
 
 
 @dataclasses.dataclass(frozen=True)

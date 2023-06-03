@@ -9,6 +9,7 @@ import tqdm
 import bpack
 
 from .udf import decode_ud
+from .constants import SYNK_MARKER
 from .descriptors import (
     PVTAncillatyData,
     PacketPrimaryHeader,
@@ -18,7 +19,6 @@ from .descriptors import (
     HKTemperatureAncillatyData,
     SubCommutatedAncillaryDataService,
 )
-from .constants_and_luts import SYNK_MARKER
 
 __all__ = [
     "isp_to_dict",
