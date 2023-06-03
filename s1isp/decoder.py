@@ -3,11 +3,12 @@
 import io
 import enum
 import logging
-from typing import List, NamedTuple, Optional, Tuple, Type
+from typing import List, NamedTuple, Optional, Sequence, Tuple, Type, Union
 
 import tqdm
 import bpack
 
+from .udf import decode_ud
 from .descriptors import (
     PVTAncillatyData,
     PacketPrimaryHeader,
@@ -33,11 +34,11 @@ SUB_COMM_LEN = 64
 class DecodedDataItem(NamedTuple):
     primary_header: PacketPrimaryHeader
     secondary_header: PacketSecondaryHeader
-    # udf: Optional[bytes] = None
+    udf: Optional[Union[bytes, Sequence[float]]] = None
 
 
 class SubCommItem(NamedTuple):
-    packet_count: int
+    packet_count: int  # TODO: probably it is better to use PRI count
     subcomm_data: SubCommutatedAncillaryDataService
 
 
@@ -202,11 +203,21 @@ class SubCommutatedDataDecoder:
         return out
 
 
+class EUdfDecodingMode(enum.Enum):
+    NONE = "none"
+    EXTRACT = "extract"
+    DECODE = "decode"
+
+    def __str__(self):
+        return self.value
+
+
 def decode_stream(
     filename,
     skip: Optional[int] = None,
     maxcount: Optional[int] = None,
     bytes_offset: int = 0,
+    udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
 ) -> Tuple[List[DecodedDataItem], List[int], List[SubCommItem]]:
     """Decode packet headers.
 
@@ -273,6 +284,7 @@ def decode_stream(
                 continue
 
             # data = fd.read(data_field_size)
+            # assert data_field_size == len(data)
             data = fd.read(secondary_header_size)
 
             # type - PacketSecondaryHeader
@@ -302,16 +314,13 @@ def decode_stream(
             # -- Counters Service
             cs = secondary_header.counters_service
             assert packet_counter == cs.space_packet_count
-            packet_counter += 1
 
             # -- Radar Configuration Support Service
             rcss = secondary_header.radar_configuration_support_service
             assert rcss.error_flag is False
-            # baq_block_len = 8 * (radar_cfg.baq_block_len + 1)
-            # assert baq_block_len == 256, (
-            #     f'baq_block_len: {radar_cfg.baq_block_len}, '
-            #     f'baq_mode: {radar_cfg.baq_mode}'
-            # )
+            # blocksize -> even + odd
+            blocksize = rcss.get_baq_block_len_samples() // 2
+            assert blocksize == 128, f"blocksize: {blocksize} != 128"
 
             # -- Radar Sample Count Service
             rscs = secondary_header.radar_sample_count_service
@@ -325,14 +334,45 @@ def decode_stream(
                 )
 
             # -- user data
-            # TODO: decode science data
+            if udf_decoding_mode is EUdfDecodingMode.NONE:
+                fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
+                udf = None
+            elif udf_decoding_mode is EUdfDecodingMode.EXTRACT:
+                udf = fd.read(data_field_size - secondary_header_size)
+            elif udf_decoding_mode is EUdfDecodingMode.DECODE:
+                try:
+                    udfbytes = fd.read(data_field_size - secondary_header_size)
+                    with open("packet-00408.pkl", "wb") as _fd:
+                        _fd.write(udfbytes)
+                    nq = rscs.number_of_quads
+                    baqmod = rcss.baq_mode
+                    tstmod = (
+                        secondary_header.fixed_ancillary_data_service.test_mode
+                    )
+                    udf = decode_ud(
+                        udfbytes, nq, baqmod, tstmod, blocksize=blocksize
+                    )
+                except Exception:
+                    logging.getLogger(__name__).debug(
+                        f"packet_counter: {packet_counter}, "
+                        f"pri_count: "
+                        f"{secondary_header.counters_service.pri_count}, "
+                        f"nq: {nq}, baqmod: {baqmod}, tstmod: {tstmod}, "
+                        f"blocksize: {blocksize}"
+                    )
+                    raise
+
+            assert (
+                offsets[-1] + primary_header_size + data_field_size
+                == fd.tell()
+            )
 
             # append a new record
-            records.append(DecodedDataItem(primary_header, secondary_header))
+            records.append(
+                DecodedDataItem(primary_header, secondary_header, udf)
+            )
 
-            # fd.read(data_field_size - secondary_header_size)
-            fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
-
+            packet_counter += 1
             pbar.update()
 
     return records, offsets, subcom_data_records
