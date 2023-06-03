@@ -10,6 +10,8 @@ import bpack
 
 from .udf import decode_ud
 from .constants import SYNK_MARKER
+from .constants import PRIMARY_HEADER_SIZE as PHSIZE
+from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
     PVTAncillatyData,
     PacketPrimaryHeader,
@@ -240,13 +242,6 @@ def decode_stream(
         * the decoded ISPs in form of (nested) dataclass structures
         * a list of :class:`SubCommItem`s containing sub-commutated data
     """
-    primary_header_size = bpack.calcsize(
-        PacketPrimaryHeader, bpack.EBaseUnits.BYTES
-    )
-    secondary_header_size = bpack.calcsize(
-        PacketSecondaryHeader, bpack.EBaseUnits.BYTES
-    )
-
     packet_counter: int = 0
     records: List[DecodedDataItem] = []
     subcom_data_records: List[SubCommItem] = []
@@ -262,7 +257,7 @@ def decode_stream(
             offsets.append(fd.tell())
 
             # primary header
-            data = fd.read(primary_header_size)
+            data = fd.read(PHSIZE)
             if len(data) == 0 or (maxcount and len(records) > maxcount):
                 break
 
@@ -285,12 +280,10 @@ def decode_stream(
 
             # data = fd.read(data_field_size)
             # assert data_field_size == len(data)
-            data = fd.read(secondary_header_size)
+            data = fd.read(SHSIZE)
 
             # type - PacketSecondaryHeader
-            secondary_header = PacketSecondaryHeader.frombytes(
-                data[:secondary_header_size]
-            )
+            secondary_header = PacketSecondaryHeader.frombytes(data[:SHSIZE])
 
             # -- Datation Service
             # ds = secondary_header.datation_service
@@ -335,13 +328,13 @@ def decode_stream(
 
             # -- user data
             if udf_decoding_mode is EUdfDecodingMode.NONE:
-                fd.seek(data_field_size - secondary_header_size, io.SEEK_CUR)
+                fd.seek(data_field_size - SHSIZE, io.SEEK_CUR)
                 udf = None
             elif udf_decoding_mode is EUdfDecodingMode.EXTRACT:
-                udf = fd.read(data_field_size - secondary_header_size)
+                udf = fd.read(data_field_size - SHSIZE)
             elif udf_decoding_mode is EUdfDecodingMode.DECODE:
                 try:
-                    udfbytes = fd.read(data_field_size - secondary_header_size)
+                    udfbytes = fd.read(data_field_size - SHSIZE)
                     with open("packet-00408.pkl", "wb") as _fd:
                         _fd.write(udfbytes)
                     nq = rscs.number_of_quads
@@ -362,10 +355,7 @@ def decode_stream(
                     )
                     raise
 
-            assert (
-                offsets[-1] + primary_header_size + data_field_size
-                == fd.tell()
-            )
+            assert offsets[-1] + PHSIZE + data_field_size == fd.tell()
 
             # append a new record
             records.append(

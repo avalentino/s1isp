@@ -32,6 +32,8 @@ from .enums import (
     ETemperatureCompensation,
 )
 from .constants import REF_FREQ, SYNK_MARKER
+from .constants import PRIMARY_HEADER_SIZE as PHSIZE
+from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 
 BITS = bpack.EBaseUnits.BITS
 BE = bpack.EByteOrder.BE
@@ -56,6 +58,9 @@ class PacketPrimaryHeader:
     sequence_flags: T["u2"] = 0
     sequence_counter: T["u14"] = 0
     packet_data_length: T["u16"] = 0
+
+
+assert bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES) == PHSIZE
 
 
 @bpack.bs.decoder
@@ -562,3 +567,6 @@ class PacketSecondaryHeader:
     counters_service: CountersService
     radar_configuration_support_service: RadarConfigurationSupportService
     radar_sample_count_service: RadarSampleCountService
+
+
+assert bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES) == SHSIZE
