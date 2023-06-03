@@ -1,6 +1,5 @@
 """Tests for ISP user data field decoding."""
 
-import bpack
 import numpy as np
 import bitstruct as bs
 from test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
@@ -8,10 +7,9 @@ from test_huffman import NSAMPLES as BLOCKSIZE
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
 from s1isp.enums import ESignalType
-from s1isp.descriptors import PacketPrimaryHeader, PacketSecondaryHeader
-
-PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
-SHSIZE = bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES)
+from s1isp.constants import PRIMARY_HEADER_SIZE as PHSIZE
+from s1isp.constants import SECONDARY_HEADER_SIZE as SHSIZE
+from s1isp.descriptors import SecondaryHeader
 
 
 def make_quats(nq: int = 100):
@@ -185,42 +183,42 @@ def test_huffman_decode(blocksize=BLOCKSIZE):
 
 def test_decode_txcal(txcal_data, txcal_ref_data):
     shdata = txcal_data[PHSIZE : PHSIZE + SHSIZE]
-    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+    secondary_header = SecondaryHeader.frombytes(shdata)
 
-    rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESignalType.tx_cal
+    rcss = secondary_header.radar_configuration_support
+    assert rcss.ses.signal_type == ESignalType.tx_cal
 
-    nq = secondary_header.radar_sample_count_service.number_of_quads
+    nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
-    tstmod = secondary_header.fixed_ancillary_data_service.test_mode
+    tstmod = secondary_header.fixed_ancillary_data.test_mode
     data = decode_ud(txcal_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, txcal_ref_data["udf"])
 
 
 def test_decode_noise(noise_data, noise_ref_data):
     shdata = noise_data[PHSIZE : PHSIZE + SHSIZE]
-    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+    secondary_header = SecondaryHeader.frombytes(shdata)
 
-    rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESignalType.noise
+    rcss = secondary_header.radar_configuration_support
+    assert rcss.ses.signal_type == ESignalType.noise
 
-    nq = secondary_header.radar_sample_count_service.number_of_quads
+    nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
-    tstmod = secondary_header.fixed_ancillary_data_service.test_mode
+    tstmod = secondary_header.fixed_ancillary_data.test_mode
     data = decode_ud(noise_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_array_equal(data, noise_ref_data["udf"])
 
 
 def test_decode_echo(echo_data, echo_ref_data):
     shdata = echo_data[PHSIZE : PHSIZE + SHSIZE]
-    secondary_header = PacketSecondaryHeader.frombytes(shdata)
+    secondary_header = SecondaryHeader.frombytes(shdata)
 
-    rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESignalType.echo
+    rcss = secondary_header.radar_configuration_support
+    assert rcss.ses.signal_type == ESignalType.echo
 
-    nq = secondary_header.radar_sample_count_service.number_of_quads
+    nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
-    tstmod = secondary_header.fixed_ancillary_data_service.test_mode
+    tstmod = secondary_header.fixed_ancillary_data.test_mode
     data = decode_ud(echo_data[PHSIZE + SHSIZE :], nq, baqmod, tstmod)
     np.testing.assert_allclose(data.real, echo_ref_data["udf"].real, atol=2e-6)
     np.testing.assert_allclose(data.imag, echo_ref_data["udf"].imag, atol=2e-6)

@@ -47,20 +47,20 @@ class SyncMarkerException(RuntimeError):
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class PacketPrimaryHeader:
+class PrimaryHeader:
     """Prinary packet header (S1-IF-ASD-PL-0007, section 3.1)."""
 
-    version: T["u3"] = 0
+    packet_version_number: T["u3"] = 0
     packet_type: T["u1"] = 0
     secondary_header_flag: bool = True
     pid: T["u7"] = 0
     pcat: T["u4"] = 0
     sequence_flags: T["u2"] = 0
-    sequence_counter: T["u14"] = 0
+    packet_sequence_count: T["u14"] = 0
     packet_data_length: T["u16"] = 0
 
 
-assert bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES) == PHSIZE
+assert bpack.calcsize(PrimaryHeader, bpack.EBaseUnits.BYTES) == PHSIZE
 
 
 @bpack.bs.decoder
@@ -103,8 +103,8 @@ class SubCommutatedAncillaryDataService:
     See S1-IF-ASD-PL-0007, section 3.2.3 and table 3.2.-12
     """
 
-    word_index: T["u8"] = 0
-    word_data: T["S16"] = 0
+    data_word_index: T["u8"] = 0
+    data_word: T["S16"] = 0
 
 
 @bpack.bs.decoder
@@ -165,63 +165,63 @@ class HKTemperatureAncillatyData:
 
     temperature_update_status: T["u16"] = 0
 
-    Tile1_EFEH_temperature: T["u8"] = 0
-    Tile1_EFEV_temperature: T["u8"] = 0
-    Tile1_TA_temperature: T["u8"] = 0
+    tile1_efeh_temperature: T["u8"] = 0
+    tile1_efev_temperature: T["u8"] = 0
+    tile1_ta_temperature: T["u8"] = 0
 
-    Tile2_EFEH_temperature: T["u8"] = 0
-    Tile2_EFEV_temperature: T["u8"] = 0
-    Tile2_TA_temperature: T["u8"] = 0
+    tile2_efeh_temperature: T["u8"] = 0
+    tile2_efev_temperature: T["u8"] = 0
+    tile2_ta_temperature: T["u8"] = 0
 
-    Tile3_EFEH_temperature: T["u8"] = 0
-    Tile3_EFEV_temperature: T["u8"] = 0
-    Tile3_TA_temperature: T["u8"] = 0
+    tile3_efeh_temperature: T["u8"] = 0
+    tile3_efev_temperature: T["u8"] = 0
+    tile3_ta_temperature: T["u8"] = 0
 
-    Tile4_EFEH_temperature: T["u8"] = 0
-    Tile4_EFEV_temperature: T["u8"] = 0
-    Tile4_TA_temperature: T["u8"] = 0
+    tile4_efeh_temperature: T["u8"] = 0
+    tile4_efev_temperature: T["u8"] = 0
+    tile4_ta_temperature: T["u8"] = 0
 
-    Tile5_EFEH_temperature: T["u8"] = 0
-    Tile5_EFEV_temperature: T["u8"] = 0
-    Tile5_TA_temperature: T["u8"] = 0
+    tile5_efeh_temperature: T["u8"] = 0
+    tile5_efev_temperature: T["u8"] = 0
+    tile5_ta_temperature: T["u8"] = 0
 
-    Tile6_EFEH_temperature: T["u8"] = 0
-    Tile6_EFEV_temperature: T["u8"] = 0
-    Tile6_TA_temperature: T["u8"] = 0
+    tile6_efeh_temperature: T["u8"] = 0
+    tile6_efev_temperature: T["u8"] = 0
+    tile6_ta_temperature: T["u8"] = 0
 
-    Tile7_EFEH_temperature: T["u8"] = 0
-    Tile7_EFEV_temperature: T["u8"] = 0
-    Tile7_TA_temperature: T["u8"] = 0
+    tile7_efeh_temperature: T["u8"] = 0
+    tile7_efev_temperature: T["u8"] = 0
+    tile7_ta_temperature: T["u8"] = 0
 
-    Tile8_EFEH_temperature: T["u8"] = 0
-    Tile8_EFEV_temperature: T["u8"] = 0
-    Tile8_TA_temperature: T["u8"] = 0
+    tile8_efeh_temperature: T["u8"] = 0
+    tile8_efev_temperature: T["u8"] = 0
+    tile8_ta_temperature: T["u8"] = 0
 
-    Tile9_EFEH_temperature: T["u8"] = 0
-    Tile9_EFEV_temperature: T["u8"] = 0
-    Tile9_TA_temperature: T["u8"] = 0
+    tile9_efeh_temperature: T["u8"] = 0
+    tile9_efev_temperature: T["u8"] = 0
+    tile9_ta_temperature: T["u8"] = 0
 
-    Tile10_EFEH_temperature: T["u8"] = 0
-    Tile10_EFEV_temperature: T["u8"] = 0
-    Tile10_TA_temperature: T["u8"] = 0
+    tile10_efeh_temperature: T["u8"] = 0
+    tile10_efev_temperature: T["u8"] = 0
+    tile10_ta_temperature: T["u8"] = 0
 
-    Tile11_EFEH_temperature: T["u8"] = 0
-    Tile11_EFEV_temperature: T["u8"] = 0
-    Tile11_TA_temperature: T["u8"] = 0
+    tile11_efeh_temperature: T["u8"] = 0
+    tile11_efev_temperature: T["u8"] = 0
+    tile11_ta_temperature: T["u8"] = 0
 
-    Tile12_EFEH_temperature: T["u8"] = 0
-    Tile12_EFEV_temperature: T["u8"] = 0
-    Tile12_TA_temperature: T["u8"] = 0
+    tile12_efeh_temperature: T["u8"] = 0
+    tile12_efev_temperature: T["u8"] = 0
+    tile12_ta_temperature: T["u8"] = 0
 
-    Tile13_EFEH_temperature: T["u8"] = 0
-    Tile13_EFEV_temperature: T["u8"] = 0
-    Tile13_TA_temperature: T["u8"] = 0
+    tile13_efeh_temperature: T["u8"] = 0
+    tile13_efev_temperature: T["u8"] = 0
+    tile13_ta_temperature: T["u8"] = 0
 
-    Tile14_EFEH_temperature: T["u8"] = 0
-    Tile14_EFEV_temperature: T["u8"] = 0
-    Tile14_TA_temperature: T["u8"] = 0
+    tile14_efeh_temperature: T["u8"] = 0
+    tile14_efev_temperature: T["u8"] = 0
+    tile14_ta_temperature: T["u8"] = 0
 
-    TGU_temperature: T["u7"] = bpack.field(default=0, offset=361)
+    tgu_temperature: T["u7"] = bpack.field(default=0, offset=361)
 
 
 @bpack.bs.decoder
@@ -236,7 +236,7 @@ class CountersService:
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
 class SasImgData:
-    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.1).
+    """SAS SSB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.1).
 
     The SAS SSB Data field indicates the actual configuration of the
     SAR Antenna Subsystem (SAS).
@@ -256,7 +256,7 @@ class SasImgData:
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
 class SasCalData:
-    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.2).
+    """SAS SSB Data (S1-IF-ASD-PL-0007, section 3.2.5.13.2).
 
     The SAS SSB Data field indicates the actual configuration of the
     SAR Antenna Subsystem (SAS).
@@ -276,8 +276,8 @@ class SasCalData:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class SasSsbData:
-    """SAS SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
+class SasData:
+    """SAS SSB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
 
     The SAS SSB Data field indicates the actual configuration of the
     SAR Antenna Subsystem (SAS).
@@ -296,8 +296,8 @@ class SasSsbData:
     def get_sas_data(self) -> Union[SasImgData, SasCalData]:
         """Return the specific SAS data record accordingthe sas_flag.
 
-        If the `ssb_flag` is True than and `SasSsbDataImaging` instance is
-        returned, otherwise a `SasSsbDataCal` instance is returned.
+        If the `ssb_flag` is True than and `SasImgData` instance is
+        returned, otherwise a `SasCalData` instance is returned.
         """
         if not self.ssb_flag:
             return SasImgData(
@@ -388,7 +388,7 @@ class SasSsbData:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class SesSbbData:
+class SesData:
     """SES SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.14)."""
 
     cal_mode: ECalMode = bpack.field(size=2, default=0)
@@ -408,7 +408,7 @@ class RadarConfigurationSupportService:
 
     error_flag: bool = False
     baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.BYPASS)
-    baq_block_len: T["u8"] = 0
+    baq_block_length: T["u8"] = 0
     # n. 8 bits padding
     range_decimation: ERangeDecimation = bpack.field(
         size=8, offset=24, default=0
@@ -422,8 +422,8 @@ class RadarConfigurationSupportService:
     pri: T["u24"] = 0
     swst: T["u24"] = 0
     swl: T["u24"] = 0
-    sas_sbb_message: SasSsbData = bpack.field(default_factory=SasSsbData)
-    ses_sbb_message: SesSbbData = bpack.field(default_factory=SesSbbData)
+    sas: SasData = bpack.field(default_factory=SasData)
+    ses: SesData = bpack.field(default_factory=SesData)
 
     def get_baq_block_len_samples(self) -> int:
         """Length of the BAQ data block (S1-IF-ASD-PL-0007, section 3.2.5.3).
@@ -433,7 +433,7 @@ class RadarConfigurationSupportService:
         The BAQ block represents a data block for which the quantisation
         is adapted according to the block statistics.
         """
-        return 8 * (self.baq_block_len + 1)
+        return 8 * (self.baq_block_length + 1)
 
     def get_range_decimation_info(self) -> RangeDecimationInfo:
         """Return information associated to Range Decimation."""
@@ -558,15 +558,15 @@ class RadarSampleCountService:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class PacketSecondaryHeader:
+class SecondaryHeader:
     """Packet Secondary Header (S1-IF-ASD-PL-0007, section 3.2)."""
 
-    datation_service: DatationService
-    fixed_ancillary_data_service: FixedAncillaryDataService
-    subcom_ancillary_data_service: SubCommutatedAncillaryDataService
-    counters_service: CountersService
-    radar_configuration_support_service: RadarConfigurationSupportService
-    radar_sample_count_service: RadarSampleCountService
+    datation: DatationService
+    fixed_ancillary_data: FixedAncillaryDataService
+    subcom_ancillary_data: SubCommutatedAncillaryDataService
+    counters: CountersService
+    radar_configuration_support: RadarConfigurationSupportService
+    radar_sample_count: RadarSampleCountService
 
 
-assert bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES) == SHSIZE
+assert bpack.calcsize(SecondaryHeader, bpack.EBaseUnits.BYTES) == SHSIZE

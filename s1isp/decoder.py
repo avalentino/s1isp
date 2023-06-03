@@ -14,10 +14,10 @@ from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
     PVTAncillatyData,
-    PacketPrimaryHeader,
+    PrimaryHeader,
     SyncMarkerException,
     AttitudeAncillatyData,
-    PacketSecondaryHeader,
+    SecondaryHeader,
     HKTemperatureAncillatyData,
     SubCommutatedAncillaryDataService,
 )
@@ -34,8 +34,8 @@ SUB_COMM_LEN = 64
 
 
 class DecodedDataItem(NamedTuple):
-    primary_header: PacketPrimaryHeader
-    secondary_header: PacketSecondaryHeader
+    primary_header: PrimaryHeader
+    secondary_header: SecondaryHeader
     udf: Optional[Union[bytes, Sequence[float]]] = None
 
 
@@ -50,7 +50,7 @@ class DecodedSubCommData(NamedTuple):
     hk: HKTemperatureAncillatyData
 
 
-class RecordInfo:
+class SubcomRecordInfo:
     def __init__(self, record_type: Type, word_index: int):
         self.size: int = bpack.calcsize(record_type, bpack.EBaseUnits.BYTES)
         self.record_type = record_type
@@ -64,9 +64,9 @@ class RecordInfo:
 
 class CycleHandler:
     record_info = {
-        "pvt": RecordInfo(PVTAncillatyData, 1),
-        "att": RecordInfo(AttitudeAncillatyData, 23),
-        "hk": RecordInfo(HKTemperatureAncillatyData, 42),
+        "pvt": SubcomRecordInfo(PVTAncillatyData, 1),
+        "att": SubcomRecordInfo(AttitudeAncillatyData, 23),
+        "hk": SubcomRecordInfo(HKTemperatureAncillatyData, 42),
     }
 
     def __init__(self):
@@ -76,7 +76,7 @@ class CycleHandler:
         return len(self.data) == SUB_COMM_LEN
 
     def decode(self):
-        word_indexes = [item.word_index for item in self.data]
+        word_indexes = [item.data_word_index for item in self.data]
         out = []
         for info in self.record_info.values():
             try:
@@ -90,7 +90,7 @@ class CycleHandler:
                 raise
             else:
                 data = b"".join(
-                    item.word_data
+                    item.data_word
                     for item in self.data[first_idx : last_idx + 1]
                 )
                 out.append(info.record_type.frombytes(data))
@@ -135,34 +135,34 @@ class SubCommutatedDataDecoder:
     def feed(self, item: SubCommItem):
         """Feed one data record into the decoder."""
         packet_count, data = item
-        word_index = data.word_index
-        if word_index == 0:
+        data_word_index = data.data_word_index
+        if data_word_index == 0:
             return
 
-        word_data = data.word_data
+        data_word = data.data_word
 
-        if len(word_data) != 2:
+        if len(data_word) != 2:
             raise RuntimeError(
-                f"Incorrect data size: {len(word_data)} (2 bytes expected)."
+                f"Incorrect data size: {len(data_word)} (2 bytes expected)."
             )
 
-        if word_index > self.MAX_WORD_INDEX:
-            raise RuntimeError(f"Invalid word index {word_index}.")
+        if data_word_index > self.MAX_WORD_INDEX:
+            raise RuntimeError(f"Invalid word index {data_word_index}.")
 
         if not self._current_cycle_handler:
             self._new_cycle()
-            if word_index != 1:
+            if data_word_index != 1:
                 self._log.warning(
                     f"Starting an incomplete sub-commutated data cycle. "
-                    f"(first index: {word_index}."
+                    f"(first index: {data_word_index}."
                 )
             self._append_data(item)
 
         else:
             assert self._current_cycle_handler.data
             prev_sc_data = self._current_cycle_handler.data[-1]
-            prev_word_index = prev_sc_data.word_index
-            step = word_index - prev_word_index
+            prev_word_index = prev_sc_data.data_word_index
+            step = data_word_index - prev_word_index
             if step < 0:
                 self._new_cycle()
             elif (
@@ -173,7 +173,7 @@ class SubCommutatedDataDecoder:
 
             self._append_data(item)
 
-        if word_index == self.MAX_WORD_INDEX:
+        if data_word_index == self.MAX_WORD_INDEX:
             self._finalize_cycle()
 
     def finalize(self):
@@ -261,13 +261,15 @@ def decode_stream(
             if len(data) == 0 or (maxcount and len(records) > maxcount):
                 break
 
-            # type - PacketPrimaryHeader
-            primary_header = PacketPrimaryHeader.frombytes(data)
+            # type - PrimaryHeader
+            primary_header = PrimaryHeader.frombytes(data)
 
-            assert primary_header.version == 0
+            assert primary_header.packet_version_number == 0
             assert primary_header.packet_type == 0
             assert primary_header.sequence_flags == 3
-            # assert primary_header.sequence_counter == packet_counter % 2**14
+            # assert (
+            #    primary_header.packet_sequence_count == packet_counter % 2**14
+            # )
 
             # secondary header
             assert primary_header.secondary_header_flag
@@ -282,43 +284,43 @@ def decode_stream(
             # assert data_field_size == len(data)
             data = fd.read(SHSIZE)
 
-            # type - PacketSecondaryHeader
-            secondary_header = PacketSecondaryHeader.frombytes(data[:SHSIZE])
+            # type - SecondaryHeader
+            secondary_header = SecondaryHeader.frombytes(data[:SHSIZE])
 
             # -- Datation Service
-            # ds = secondary_header.datation_service
+            # ds = secondary_header.datation
 
             # -- Fixed Ancillary Data Service
-            # fasd = secondary_header.fixed_ancillary_data_service
-            sync = secondary_header.fixed_ancillary_data_service.sync_marker
+            # fasd = secondary_header.fixed_ancillary_data
+            sync = secondary_header.fixed_ancillary_data.sync_marker
             if sync != SYNK_MARKER:
                 raise SyncMarkerException(
                     f"packat count: {packet_counter + 1}"
                 )
 
             # -- Sub-commutation Ancillary Data Service
-            # sc_ads = secondary_header.subcom_ancillary_data_service
+            # sc_ads = secondary_header.subcom_ancillary_data
             sc_data_item = SubCommItem(
                 packet_counter,
-                secondary_header.subcom_ancillary_data_service,
+                secondary_header.subcom_ancillary_data,
             )
             subcom_data_records.append(sc_data_item)
 
             # -- Counters Service
-            cs = secondary_header.counters_service
+            cs = secondary_header.counters
             assert packet_counter == cs.space_packet_count
 
             # -- Radar Configuration Support Service
-            rcss = secondary_header.radar_configuration_support_service
+            rcss = secondary_header.radar_configuration_support
             assert rcss.error_flag is False
             # blocksize -> even + odd
             blocksize = rcss.get_baq_block_len_samples() // 2
             assert blocksize == 128, f"blocksize: {blocksize} != 128"
 
             # -- Radar Sample Count Service
-            rscs = secondary_header.radar_sample_count_service
+            rscs = secondary_header.radar_sample_count
             # See S1-IF-ASD-PL-0007, section 3.2.5.11
-            if rcss.ses_sbb_message.signal_type <= 7:
+            if rcss.ses.signal_type <= 7:
                 assert (
                     2 * rscs.number_of_quads == rcss.get_swl_n3rx_samples()
                 ), (
@@ -339,9 +341,7 @@ def decode_stream(
                         _fd.write(udfbytes)
                     nq = rscs.number_of_quads
                     baqmod = rcss.baq_mode
-                    tstmod = (
-                        secondary_header.fixed_ancillary_data_service.test_mode
-                    )
+                    tstmod = secondary_header.fixed_ancillary_data.test_mode
                     udf = decode_ud(
                         udfbytes, nq, baqmod, tstmod, blocksize=blocksize
                     )
@@ -349,7 +349,7 @@ def decode_stream(
                     logging.getLogger(__name__).debug(
                         f"packet_counter: {packet_counter}, "
                         f"pri_count: "
-                        f"{secondary_header.counters_service.pri_count}, "
+                        f"{secondary_header.counters.pri_count}, "
                         f"nq: {nq}, baqmod: {baqmod}, tstmod: {tstmod}, "
                         f"blocksize: {blocksize}"
                     )
@@ -391,15 +391,15 @@ def _sas_to_dict(sas):
 
 def _radar_cfg_to_dict(rcss):
     rcss_data = bpack.asdict(rcss)
-    rcss_data.pop("sas_sbb_message")
-    rcss_data.pop("ses_sbb_message")
+    rcss_data.pop("sas")
+    rcss_data.pop("ses")
 
     # SAS SBB message
-    sas_data = _sas_to_dict(rcss.sas_sbb_message)
+    sas_data = _sas_to_dict(rcss.sas)
     rcss_data.update(sas_data)
 
     # SES SBB message
-    ses_data = bpack.asdict(rcss.ses_sbb_message)
+    ses_data = bpack.asdict(rcss.ses)
     rcss_data.update(ses_data)
 
     return rcss_data
@@ -415,8 +415,8 @@ def _enum_value_to_name(data):
 
 
 def isp_to_dict(
-    primary_header: PacketPrimaryHeader,
-    secondary_header: Optional[PacketSecondaryHeader] = None,
+    primary_header: PrimaryHeader,
+    secondary_header: Optional[SecondaryHeader] = None,
     enum_value: bool = False,
 ) -> dict:
     """Converst promary and secondaty headers to dictionary."""
@@ -425,25 +425,25 @@ def isp_to_dict(
         sh = secondary_header
 
         # datation service
-        data.update(bpack.asdict(sh.datation_service))
+        data.update(bpack.asdict(sh.datation))
 
         # fixed ancillary data service
-        data.update(bpack.asdict(sh.fixed_ancillary_data_service))
+        data.update(bpack.asdict(sh.fixed_ancillary_data))
 
         # subcom ancillary data service
-        sads_data = bpack.asdict(sh.subcom_ancillary_data_service)
-        sads_data.pop("word_data")
+        sads_data = bpack.asdict(sh.subcom_ancillary_data)
+        sads_data.pop("data_word")
         data.update(sads_data)
 
         # counters service
-        data.update(bpack.asdict(sh.counters_service))
+        data.update(bpack.asdict(sh.counters))
 
         # radar configuration support service
-        rcss_data = _radar_cfg_to_dict(sh.radar_configuration_support_service)
+        rcss_data = _radar_cfg_to_dict(sh.radar_configuration_support)
         data.update(rcss_data)
 
         # radar sample count service
-        data.update(bpack.asdict(sh.radar_sample_count_service))
+        data.update(bpack.asdict(sh.radar_sample_count))
 
     if not enum_value:
         # replace enums with their symbolic name
