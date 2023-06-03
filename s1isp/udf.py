@@ -12,8 +12,8 @@ import numpy as np
 import bpack.np
 
 from . import _huffman as huffman
+from .luts import get_baq_lut, get_fdbaq_lut
 from .descriptors import EBaqMode, ETestMode
-from .constants_and_luts import get_baq_lut, get_fdbaq_lut
 
 BLOCKSIZE = 128  # 128 odd + 128 even = 256
 BRC_CODE_SIZE = 3  # bits

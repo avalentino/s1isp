@@ -1,6 +1,6 @@
 """Tests for LUTs."""
 
-from s1isp.constants_and_luts import BRC_SIZE, get_fdbaq_lut
+from s1isp.luts import BRC_SIZE, get_fdbaq_lut
 
 
 def test_fdbaq_econstruction_lut(fdbaq_reconstruction_lut):
