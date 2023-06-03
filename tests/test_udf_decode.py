@@ -148,6 +148,8 @@ def get_fdbaq_stream(blocksize):
     assert ie_pad + io_pad + qe_pad + qo_pad > 1
 
     bits = np.asarray(ie_bits + io_bits + qe_bits + qo_bits, dtype=np.uint8)
+    outsize = int(np.ceil(len(bits) / (4 * 8))) * (4 * 8)
+    bits.resize(outsize)
 
     return bits, [ie_values, io_values, qe_values, qo_values], brcs, thidx
 
@@ -158,7 +160,9 @@ def test_huffman_decode(blocksize=BLOCKSIZE):
     assert len(ie_values) == len(io_values) == len(qe_values) == len(qo_values)
     nq = len(ie_values)
 
-    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(bits, nq)
+    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(
+        bits, nq, blocksize=blocksize
+    )
 
     np.testing.assert_array_equal(brcs, brc_data)
     np.testing.assert_array_equal(thidx, thidx_data)

@@ -15,7 +15,7 @@ from . import _huffman as huffman
 from .descriptors import EBaqMode, ETestMode
 from .constants_and_luts import get_baq_lut, get_fdbaq_lut
 
-BLOCKSIZE = 128
+BLOCKSIZE = 128  # 128 odd + 128 even = 256
 BRC_CODE_SIZE = 3  # bits
 THIDX_SIZE = 8  # bits
 
@@ -157,7 +157,7 @@ def baq_decode(
     See section 4 and 4.3 of S1-IF-ASD-PL-0007.
     """
     bits_per_sample = baqmod.value
-    nb = int(np.ceil(nq / blocksize))  # == ceil(2 * nq / 256)
+    nb = int(np.ceil(nq / blocksize))  # == ceil(2 * nq / (256 // 2))
 
     nw_ie = int(np.ceil(bits_per_sample * nq / 16))
     nw_io = nw_ie
@@ -219,9 +219,9 @@ def huffman_decode(
     bits,
     nq: int,
     *,
+    blocksize: int = BLOCKSIZE,
     brc_code_size: int = BRC_CODE_SIZE,
     thidx_size: int = THIDX_SIZE,
-    blocksize: int = BLOCKSIZE,
 ):
     """Decode Huffman encoded data."""
     nb = int(np.ceil(nq / blocksize))  # == ceil(2 * nq / 256)
@@ -299,6 +299,9 @@ def huffman_decode(
     nwords = int(np.ceil((idx - idx0) / 16))
     idx = idx0 + nwords * 16
 
+    n_octets_with_fill = int(np.ceil((idx // 8) / 4)) * 4
+    idx = n_octets_with_fill * 8
+
     assert idx == len(bits), f"idx = {idx}, len(bits) = {len(bits)}"
 
     return ie, io, qe, qo, brc_data, thidx_data
@@ -319,7 +322,9 @@ def fdbaq_decode(
     See section 4 and 4.4 of S1-IF-ASD-PL-0007.
     """
     bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(bits, nq)
+    ie, io, qe, qo, brc_data, thidx_data = huffman_decode(
+        bits, nq, blocksize=blocksize
+    )
     assert len(ie) == len(io) == len(qe) == len(qo) == nq
 
     # TODO: use out directly
@@ -349,6 +354,9 @@ def decode_ud(
     nq: int,
     baqmod: EBaqMode,
     tstmod: ETestMode = ETestMode.default,
+    *,
+    out: Optional[np.ndarray] = None,
+    blocksize: int = BLOCKSIZE,
 ) -> np.ndarray:
     """Decode user data for data."""
     data_format_type = get_data_format_type(baqmod, tstmod)
@@ -358,8 +366,10 @@ def decode_ud(
     elif data_format_type == EDataFormatType.B:
         return bypass_decode(data, nq)
     elif data_format_type == EDataFormatType.C:
-        return baq_decode(data, nq, baqmod=baqmod)
+        return baq_decode(
+            data, nq, baqmod=baqmod, blocksize=blocksize, out=out
+        )
     elif data_format_type == EDataFormatType.D:
-        return fdbaq_decode(data, nq)
+        return fdbaq_decode(data, nq, blocksize=blocksize, out=out)
     else:
         raise ValueError(f"Invalid data format type: '{data_format_type}'.")
