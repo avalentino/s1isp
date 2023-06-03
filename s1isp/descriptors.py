@@ -19,16 +19,16 @@ from .luts import (
 )
 from .enums import (
     EBaqMode,
+    ECalMode,
+    ECalType,
     ETestMode,
     EEccNumber,
     EAocsOpMode,
-    ESesCalMode,
-    ESasCalType,
+    ESignalType,
     ERxChannelId,
     ESasTestMode,
-    ESesSignalType,
+    EPolarization,
     ERangeDecimation,
-    ESasPolarization,
     ETemperatureCompensation,
 )
 from .constants import REF_FREQ, SYNK_MARKER
@@ -238,8 +238,8 @@ class SasImgData:
     """
 
     ssb_flag: bool = False
-    polarization: ESasPolarization = bpack.field(
-        size=3, default=ESasPolarization.h_tx_only
+    polarization: EPolarization = bpack.field(
+        size=3, default=EPolarization.h_tx_only
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
         size=2, default=ETemperatureCompensation.fe_off_ta_off
@@ -258,8 +258,8 @@ class SasCalData:
     """
 
     ssb_flag: bool = False
-    polarization: ESasPolarization = bpack.field(
-        size=3, default=ESasPolarization.h_tx_only
+    polarization: EPolarization = bpack.field(
+        size=3, default=EPolarization.h_tx_only
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
         size=2, default=ETemperatureCompensation.fe_off_ta_off
@@ -279,8 +279,8 @@ class SasSsbData:
     """
 
     ssb_flag: bool = False
-    polarization: ESasPolarization = bpack.field(
-        size=3, default=ESasPolarization.h_tx_only
+    polarization: EPolarization = bpack.field(
+        size=3, default=EPolarization.h_tx_only
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
         size=2, default=ETemperatureCompensation.fe_off_ta_off
@@ -353,7 +353,7 @@ class SasSsbData:
         else:
             return ESasTestMode((self._dynamic_data >> 3) & 0b0000001)
 
-    def get_cal_type(self, check: bool = True) -> ESasCalType:
+    def get_cal_type(self, check: bool = True) -> ECalType:
         """Return the calibration type code.
 
         Please note that if `ssb_flag` is `False` and `check` is `True` then
@@ -364,7 +364,7 @@ class SasSsbData:
                 "SAS SSB Data with ssb_flag=False have no cal_type field"
             )
         else:
-            return ESasCalType(self._dynamic_data & 0b00000111)
+            return ECalType(self._dynamic_data & 0b00000111)
 
     def get_calibration_beam_address(self, check: bool = True) -> int:
         """Return the calibration beam address code.
@@ -386,11 +386,9 @@ class SasSsbData:
 class SesSbbData:
     """SES SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.14)."""
 
-    cal_mode: ESesCalMode = bpack.field(size=2, default=0)
+    cal_mode: ECalMode = bpack.field(size=2, default=0)
     tx_pulse_number: T["u5"] = bpack.field(default=0, offset=3)
-    signal_type: ESesSignalType = bpack.field(
-        size=4, default=ESesSignalType.echo
-    )
+    signal_type: ESignalType = bpack.field(size=4, default=ESignalType.echo)
     swap: bool = bpack.field(default=False, offset=15)
     swath_number: T["u8"] = 0
 

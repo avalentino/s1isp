@@ -7,7 +7,7 @@ from test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
 from test_huffman import NSAMPLES as BLOCKSIZE
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
-from s1isp.enums import ESesSignalType
+from s1isp.enums import ESignalType
 from s1isp.descriptors import PacketPrimaryHeader, PacketSecondaryHeader
 
 PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
@@ -188,7 +188,7 @@ def test_decode_txcal(txcal_data, txcal_ref_data):
     secondary_header = PacketSecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.tx_cal
+    assert rcss.ses_sbb_message.signal_type == ESignalType.tx_cal
 
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode
@@ -202,7 +202,7 @@ def test_decode_noise(noise_data, noise_ref_data):
     secondary_header = PacketSecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.noise
+    assert rcss.ses_sbb_message.signal_type == ESignalType.noise
 
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode
@@ -216,7 +216,7 @@ def test_decode_echo(echo_data, echo_ref_data):
     secondary_header = PacketSecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.echo
+    assert rcss.ses_sbb_message.signal_type == ESignalType.echo
 
     nq = secondary_header.radar_sample_count_service.number_of_quads
     baqmod = rcss.baq_mode

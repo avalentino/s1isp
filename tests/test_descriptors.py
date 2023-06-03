@@ -6,7 +6,7 @@ import bpack
 import pytest
 from numpy import testing as npt
 
-from s1isp.enums import ESesSignalType
+from s1isp.enums import ESignalType
 from s1isp.descriptors import (
     SasCalData,
     SasImgData,
@@ -32,7 +32,7 @@ def test_txcal(txcal_data, txcal_ref_data):
     assert primary_header.packet_data_length + 1 == len(txcal_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.tx_cal
+    assert rcss.ses_sbb_message.signal_type == ESignalType.tx_cal
 
 
 def test_cal_sas(txcal_data, txcal_ref_data):
@@ -80,7 +80,7 @@ def test_noise(noise_data, noise_ref_data):
     assert primary_header.packet_data_length + 1 == len(noise_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.noise
+    assert rcss.ses_sbb_message.signal_type == ESignalType.noise
 
 
 def test_noise_sas(noise_data, noise_ref_data):
@@ -132,7 +132,7 @@ def test_echo(echo_data, echo_ref_data):
     assert primary_header.packet_data_length + 1 == len(echo_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support_service
-    assert rcss.ses_sbb_message.signal_type == ESesSignalType.echo
+    assert rcss.ses_sbb_message.signal_type == ESignalType.echo
 
 
 def test_echo_sas(echo_data, echo_ref_data):
