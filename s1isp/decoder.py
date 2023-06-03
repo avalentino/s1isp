@@ -459,7 +459,7 @@ def decoded_stream_to_dict(
     """Convert a list of decoded ISPs into a list of metadata dictionaries."""
     out = []
     for record in records:
-        primary_header, secondary_header = record
+        primary_header, secondary_header, _ = record
         metadata = isp_to_dict(
             primary_header, secondary_header, enum_value=enum_value
         )
