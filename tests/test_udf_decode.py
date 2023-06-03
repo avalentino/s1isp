@@ -7,11 +7,8 @@ from test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
 from test_huffman import NSAMPLES as BLOCKSIZE
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
-from s1isp.descriptors import (
-    ESesSignalType,
-    PacketPrimaryHeader,
-    PacketSecondaryHeader,
-)
+from s1isp.enums import ESesSignalType
+from s1isp.descriptors import PacketPrimaryHeader, PacketSecondaryHeader
 
 PHSIZE = bpack.calcsize(PacketPrimaryHeader, bpack.EBaseUnits.BYTES)
 SHSIZE = bpack.calcsize(PacketSecondaryHeader, bpack.EBaseUnits.BYTES)

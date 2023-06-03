@@ -4,12 +4,12 @@ LUTs are defined in the "Sentinel-1 SAR Space Packet Protocol Data Unit"
 document (S1-IF-ASD-PL-0007) issue 13.
 """
 
-import enum
 import dataclasses
 from typing import List
 from fractions import Fraction
 from functools import lru_cache
 
+from .enums import EBaqMode, EBrcCode
 from .constants import REF_FREQ
 
 
@@ -551,28 +551,6 @@ def lookup_efe_temperature(code: int) -> float:
     if temperature is None:
         raise IndexError(f"Invalid EFE temperature code: {code}.")
     return temperature
-
-
-class EBaqMode(enum.IntEnum):
-    """BAQ modes (S1-IF-ASD-PL-0007, section 3.2.5.2)."""
-
-    BYPASS = 0
-    BAQ3 = 3
-    BAQ4 = 4
-    BAQ5 = 5
-    FDBAQ_MODE_0 = 12
-    FDBAQ_MODE_1 = 13
-    FDBAQ_MODE_2 = 14
-
-
-class EBrcCode(enum.IntEnum):
-    """BRC codes."""
-
-    BRC0 = 0
-    BRC1 = 1
-    BRC2 = 2
-    BRC3 = 3
-    BRC4 = 4
 
 
 # S1-IF-ASD-PL-0007 section 5.2.1 Table 5.2-1

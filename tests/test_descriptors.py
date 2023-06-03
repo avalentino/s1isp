@@ -6,8 +6,8 @@ import bpack
 import pytest
 from numpy import testing as npt
 
+from s1isp.enums import ESesSignalType
 from s1isp.descriptors import (
-    ESesSignalType,
     SasCalData,
     SasImgData,
     PacketPrimaryHeader,
