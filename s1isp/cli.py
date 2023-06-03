@@ -1,4 +1,4 @@
-"""Sentinel-1 Instrument Souce Packets decoder Coommans Line Intervace."""
+"""Sentinel-1 Instrument Souce Packets decoder Command Line Interface."""
 
 import sys
 import enum
@@ -10,7 +10,7 @@ import datetime
 from typing import Optional
 
 from . import __version__
-from .decoder import decode_stream, decoded_stream_to_dict
+from .decoder import decode_stream, decoded_stream_to_dict, EUdfDecodingMode
 
 try:
     from os import EX_OK
@@ -31,8 +31,8 @@ class EOutputFormat(enum.Enum):
     """Output formats for ISP headers dumps."""
 
     PICKLE = "pkl"
-    CSV = "csv"
     HDF5 = "h5"
+    CSV = "csv"
     XLSX = "xlsx"
 
     def __str__(self):
@@ -48,14 +48,18 @@ def dump_records(
     bytes_offset: int = 0,
     enum_value: bool = False,
     force: bool = False,
+    udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
 ):
     """Dump content od primary and secondary headers into an XLSX file."""
     output_format = EOutputFormat(output_format)
     if outfile is None:
         outfile = f"{pathlib.Path(filename).stem}.{output_format.value}"
 
-    if not force and pathlib.Path(outfile).exists():
-        raise FileExistsError(f"File already exists: {outfile}")
+    if pathlib.Path(outfile).exists():
+        if force:
+            _log.warning("Overwrite existing file: '%s'", outfile)
+        else:
+            raise FileExistsError(f"File already exists: {outfile}")
 
     _log.info(f"Start decoding: '{filename}' ...")
     t0 = datetime.datetime.now()
@@ -65,6 +69,7 @@ def dump_records(
         skip=skip,
         maxcount=maxcount,
         bytes_offset=bytes_offset,
+        udf_decoding_mode=udf_decoding_mode,
     )
     elapsed = datetime.datetime.now() - t0
     _log.info("Decoding complete (elapsed time %s).", elapsed)
@@ -77,6 +82,8 @@ def dump_records(
         )
         with open(outfile, "wb") as fd:
             pickle.dump(data, fd)
+    # elif output_format == EOutputFormat.HDF5:
+    #     # TODO: custom dump function (this should become the default one)
     else:
         import pandas as pd
 
@@ -108,7 +115,7 @@ def dump_records(
             raise ValueError(f"Unknown output format '{output_format}'")
 
         elapsed = datetime.datetime.now() - t0
-        _log.info("Data written to %s (elapsed time: {%s}).", outfile, elapsed)
+        _log.info("Data written to %s (elapsed time: %s).", outfile, elapsed)
 
 
 def _autocomplete(parser: argparse.ArgumentParser):
@@ -181,7 +188,7 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
         "-o",
         "--outfile",
         help="output file name for metadata (default file with the "
-        "same basename of the input stored in the local folder)",
+        "same basename of the input stored in the current working directory)",
     )
     parser.add_argument(
         "--skip",
@@ -211,7 +218,7 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
         "--of",
         choices=EOutputFormat,
         type=EOutputFormat,
-        default=EOutputFormat.PICKLE.value,
+        default=EOutputFormat.PICKLE,
         help="specify the output format (default: %(default)r)",
     )
     parser.add_argument(
@@ -219,6 +226,14 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="overwtire the output file if it already exists",
+    )
+    parser.add_argument(
+        "--data",
+        choices=EUdfDecodingMode,
+        type=EUdfDecodingMode,
+        default=EUdfDecodingMode.NONE,
+        help="control the management of the user data field data "
+        "(default: '%(default)s')",
     )
 
     # Positional arguments
@@ -246,7 +261,14 @@ def parse_args(args=None, namespace=None, parser=None):
     args = parser.parse_args(args, namespace)
 
     # Common pre-processing of parsed arguments and consistency checks
-    # ...
+    if args.data is not EUdfDecodingMode.NONE and args.output_format in {
+        EOutputFormat.CSV,
+        EOutputFormat.XLSX,
+    }:
+        parser.error(
+            f"the option data={args.data} is incompatible with "
+            f"output_format={args.output.format}"
+        )
 
     # if getattr(args, "func", None) is None:
     #     parser.error("no sub-command specified.")
@@ -266,7 +288,7 @@ def main(*argv):
     # execute main tasks
     exit_code = EX_OK
     try:
-        _log.setLevel(args.loglevel)
+        logging.getLogger().setLevel(args.loglevel)
 
         _log.debug("args: %s", args)
 
@@ -279,6 +301,7 @@ def main(*argv):
             bytes_offset=args.bytes_offset,
             enum_value=args.enum_value,
             force=args.force,
+            udf_decoding_mode=args.data,
         )
     except Exception as exc:
         _log.critical(
