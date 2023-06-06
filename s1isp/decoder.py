@@ -9,7 +9,7 @@ import tqdm
 import bpack
 
 from .udf import decode_ud
-from .constants import SYNK_MARKER
+from .constants import SYNC_MARKER
 from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
@@ -293,7 +293,7 @@ def decode_stream(
             # -- Fixed Ancillary Data Service
             # fasd = secondary_header.fixed_ancillary_data
             sync = secondary_header.fixed_ancillary_data.sync_marker
-            if sync != SYNK_MARKER:
+            if sync != SYNC_MARKER:
                 raise SyncMarkerException(
                     f"packat count: {packet_counter + 1}"
                 )

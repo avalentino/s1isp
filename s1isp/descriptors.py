@@ -31,7 +31,7 @@ from .enums import (
     ERangeDecimation,
     ETemperatureCompensation,
 )
-from .constants import REF_FREQ, SYNK_MARKER
+from .constants import REF_FREQ, SYNC_MARKER
 from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 
@@ -84,7 +84,7 @@ class DatationService:
 class FixedAncillaryDataService:
     """Fixed Ancillary Data Field (S1-IF-ASD-PL-0007, section 3.2.2)."""
 
-    sync_marker: T["u32"] = SYNK_MARKER
+    sync_marker: T["u32"] = SYNC_MARKER
     data_take_id: T["u32"] = 0
     ecc_num: EEccNumber = bpack.field(size=8, default=EEccNumber.not_set)
     # n. 1 bit n/a
