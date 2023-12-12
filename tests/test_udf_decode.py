@@ -144,7 +144,7 @@ def get_fdbaq_stream(blocksize):
 
     bits = np.asarray(ie_bits + io_bits + qe_bits + qo_bits, dtype=np.uint8)
     outsize = int(np.ceil(len(bits) / (4 * 8))) * (4 * 8)
-    bits.resize(outsize)
+    bits = np.resize(bits, outsize)
 
     return bits, [ie_values, io_values, qe_values, qo_values], brcs, thidx
 
