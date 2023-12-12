@@ -1,7 +1,8 @@
 #!/usr/bin/make -f
 
 PYTHON=python3
-PKGNAME=s1isp
+SPHINX_APIDOC=sphinx-apidoc
+TARGET=s1isp
 
 .PHONY: default help ext dist check fullcheck coverage lint api docs clean cleaner distclean
 
@@ -28,46 +29,43 @@ ext:
 
 dist:
 	$(PYTHON) -m build
-	$(PYTHON) -m twine check dist/*
+	$(PYTHON) -m twine check dist/*.tar.gz dist/*.whl
 
 check:
 	$(PYTHON) -m pytest
 
 fullcheck:
-	$(PYTHON) -m tox
+	$(PYTHON) -m tox run
 
 coverage:
-	$(PYTHON) -m pytest --cov=$(PKGNAME) --cov-report=html --cov-report=term
+	$(PYTHON) -m pytest --cov=$(TARGET) --cov-report=html --cov-report=term
 
 lint:
-	$(PYTHON) -m flake8 --count --statistics $(PKGNAME) tests
-	$(PYTHON) -m pydocstyle --count $(PKGNAME)
-	$(PYTHON) -m isort --check $(PKGNAME) tests
-	$(PYTHON) -m black --check $(PKGNAME) tests
+	$(PYTHON) -m flake8 --count --statistics $(TARGET) tests
+	$(PYTHON) -m pydocstyle --count $(TARGET)
+	$(PYTHON) -m isort --check $(TARGET) tests
+	$(PYTHON) -m black --check $(TARGET) tests
+	# $(PYTHON) -m mypy --check-untyped-defs --ignore-missing-imports $(TARGET)
 
 api:
 	$(RM) -r docs/api
-	sphinx-apidoc --module-first --separate --no-toc -o docs/api \
-	  --doc-project "$(PKGNAME) API" --templatedir docs/_templates/apidoc \
-	  $(PKGNAME)
+	$(SPHINX_APIDOC) --module-first --separate --no-toc -o docs/api \
+	  --doc-project "$(TARGET) API" --templatedir docs/_templates/apidoc \
+	  $(TARGET)
 
 docs:
 	$(MAKE) -C docs html
 
-
 clean:
-	$(RM) -r *.egg-info build
+	$(RM) -r *.*-info build
 	find . -name __pycache__ -type d -exec $(RM) -r {} +
 	$(RM) s1isp/_huffman.c s1isp/*.so s1isp/*.o
-	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/tests/__pycache__
-	# $(MAKE) -C docs clean
+	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/*/__pycache__
+	if [ -f docs/makefile ] ; then $(MAKE) -C docs clean; fi
 	$(RM) -r docs/_build
 
-
 cleaner: clean
-	$(RM) -r .coverage htmlcov .pytest_cache .tox .ipynb_checkpoints
-
+	$(RM) -r .coverage htmlcov .pytest_cache .mypy_cache .tox .ipynb_checkpoints
 
 distclean: cleaner
 	$(RM) -r dist
-

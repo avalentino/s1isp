@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel", "Cython", "numpy"]
+requires = ["setuptools>=61.0.0", "Cython", "numpy"]
 build-backend = "setuptools.build_meta"
 
 
@@ -15,6 +15,7 @@ keywords = [
     "satellite",
     "decoder",
     "isp",
+    "sentinel-1",
 ]
 license = {text = "Apache-2.0"}
 classifiers = [
@@ -38,24 +39,23 @@ test = ["pytest"]
 
 
 [project.urls]
-homepage = "https://github.com/avalentino/s1isp"
-# documentation = "https://s1isp.readthedocs.io"
-documentation = "https://github.com/avalentino/s1isp/blob/main/README.rst"
-repository = "https://github.com/avalentino/s1isp.git"
-# changelog = "https://github.com/avalentino/s1isp/blob/main/NEWS.rst"
+Homepage = "https://github.com/avalentino/s1isp"
+# Documentation = "https://s1isp.readthedocs.io"
+Documentation = "https://github.com/avalentino/s1isp/blob/main/README.rst"
+Repository = "https://github.com/avalentino/s1isp.git"
+# Changelog = "https://github.com/avalentino/s1isp/blob/main/NEWS.rst"
+Issues = "https://github.com/avalentino/s1isp/issues"
 
 
 [tool.setuptools]
 packages = ["s1isp"]
-zip-safe = true
-# license-files = ["LICENSE"]
 
 
 [tool.setuptools.dynamic]
 version = {attr = "s1isp.__version__"}
 
 
-[tool.pytest.ini_options]
+# [tool.pytest.ini_options]
 # addopts = "--ignore=examples/"
 
 
