@@ -43,7 +43,7 @@ Homepage = "https://github.com/avalentino/s1isp"
 # Documentation = "https://s1isp.readthedocs.io"
 Documentation = "https://github.com/avalentino/s1isp/blob/main/README.rst"
 Repository = "https://github.com/avalentino/s1isp.git"
-# Changelog = "https://github.com/avalentino/s1isp/blob/main/NEWS.rst"
+Changelog = "https://github.com/avalentino/s1isp/blob/main/docs/NEWS.rst"
 Issues = "https://github.com/avalentino/s1isp/issues"
 
 
