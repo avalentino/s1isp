@@ -16,15 +16,21 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    needs: build
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.x"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install build dependencies
         run: |
@@ -43,30 +49,6 @@ jobs:
           path: |
             dist/*.tar.gz
             dist/*.whl
-
-  test:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} ${{ matrix.python-version }}
-    needs: build
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.x"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-    steps:
-      # Only necessary if the test code is located outside the package
-      - uses: actions/checkout@v4
-
-      - name: Get distribution
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
 
       - name: Install
         shell: bash
