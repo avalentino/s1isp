@@ -1,49 +1,87 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE: s1isp
 
 jobs:
   build:
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        include:
-        - os: windows-latest
-          python-version: '3.x'
-        - os: macos-latest
-          python-version: '3.x'
-
-    runs-on: ${{ matrix.os }}        
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        python -m pip install build flake8 pydocstyle isort black pytest
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        python -m flake8 --count --statistics s1isp
-        python -m pydocstyle --count s1isp
-        python -m isort --check s1isp
-        python -m black --check s1isp
-    - name: Build
-      run: |
-        python -m build
-    - name: Install
-      shell: bash
-      run: |
-        python -m pip install dist/s1isp*.whl
-    - name: Test with pytest
-      run: |
-        cd dist
-        python -m pytest ../tests
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      - name: Build package
+        run: |
+          python -m build
+          python -m twine check dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
+
+  test:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    needs: build
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.x"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      # Only necessary if the test code is located outside the package
+      - uses: actions/checkout@v4
+
+      - name: Get distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install dist/${PACKAGE}-*.whl
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          python -m pip install pytest pytest-cov
+          if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
+
+      - name: Test
+        shell: bash
+        run: |
+          cd tests
+          python -m pytest --cov=${PACKAGE} --cov-report=html --cov-report=term .
