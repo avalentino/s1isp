@@ -1,6 +1,6 @@
 """Sentinel-1 Instrument Source Packets (ISP) descriptors.
 
-The definotion of all the ISP records is provided in the "Sentinel-1 SAR
+The definition of all the ISP records is provided in the "Sentinel-1 SAR
 Space Packet Protocol Data Unit" document (S1-IF-ASD-PL-0007) issue 13.
 """
 
@@ -48,7 +48,7 @@ class SyncMarkerException(RuntimeError):
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
 class PrimaryHeader:
-    """Prinary packet header (S1-IF-ASD-PL-0007, section 3.1)."""
+    """Primary packet header (S1-IF-ASD-PL-0007, section 3.1)."""
 
     packet_version_number: T["u3"] = 0
     packet_type: T["u1"] = 0
@@ -74,7 +74,7 @@ class DatationService:
     def get_fine_time_sec(self) -> float:
         """Fine time [s] (S1-IF-ASD-PL-0007, section 3.2.1.2).
 
-        The Fine Time represents the subsecond time stamp of the Space Packet.
+        The Fine Time represents the sub-second time stamp of the Space Packet.
         """
         return (self.fine_time + 0.5) * 2**-16
 
@@ -109,7 +109,7 @@ class SubCommutatedAncillaryDataService:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class PVTAncillatyData:
+class PVTAncillaryData:
     """Position Velocity Time (PVT) Ancillary Data.
 
     See S1-IF-ASD-PL-0007, table 3.2-5.
@@ -138,7 +138,7 @@ class PointingStatus:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class AttitudeAncillatyData:
+class AttitudeAncillaryData:
     """Attitude Ancillary Data (S1-IF-ASD-PL-0007, table 3.2-6)."""
 
     q0: T["f32"] = 0
@@ -157,7 +157,7 @@ class AttitudeAncillatyData:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class HKTemperatureAncillatyData:
+class HKTemperatureAncillaryData:
     """Antenna and TGU temperature HouseKeeping Data.
 
     See S1-IF-ASD-PL-0007, table 3.2-9.
@@ -294,7 +294,7 @@ class SasData:
     _beam_address: T["u10"] = bpack.field(default=0, offset=14)
 
     def get_sas_data(self) -> Union[SasImgData, SasCalData]:
-        """Return the specific SAS data record accordingthe sas_flag.
+        """Return the specific SAS data record according to the sas_flag.
 
         If the `ssb_flag` is True than and `SasImgData` instance is
         returned, otherwise a `SasCalData` instance is returned.
@@ -430,7 +430,7 @@ class RadarConfigurationSupportService:
 
         The BAQ Block Length is the number of complex radar samples per
         BAQ block.
-        The BAQ block represents a data block for which the quantisation
+        The BAQ block represents a data block for which the quantization
         is adapted according to the block statistics.
         """
         return 8 * (self.baq_block_length + 1)

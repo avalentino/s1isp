@@ -1,4 +1,4 @@
-"""Sentinel-1 Instrument Souce Packets decoder Command Line Interface."""
+"""Sentinel-1 Instrument Source Packets decoder Command Line Interface."""
 
 import sys
 import enum

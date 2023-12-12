@@ -13,12 +13,12 @@ from .constants import SYNC_MARKER
 from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
-    PVTAncillatyData,
+    PVTAncillaryData,
     PrimaryHeader,
     SyncMarkerException,
-    AttitudeAncillatyData,
+    AttitudeAncillaryData,
     SecondaryHeader,
-    HKTemperatureAncillatyData,
+    HKTemperatureAncillaryData,
     SubCommutatedAncillaryDataService,
 )
 
@@ -41,13 +41,13 @@ class DecodedDataItem(NamedTuple):
 
 class SubCommItem(NamedTuple):
     packet_count: int  # TODO: probably it is better to use PRI count
-    subcomm_data: SubCommutatedAncillaryDataService
+    subcom_data: SubCommutatedAncillaryDataService
 
 
 class DecodedSubCommData(NamedTuple):
-    pvt: PVTAncillatyData
-    att: AttitudeAncillatyData
-    hk: HKTemperatureAncillatyData
+    pvt: PVTAncillaryData
+    att: AttitudeAncillaryData
+    hk: HKTemperatureAncillaryData
 
 
 class SubcomRecordInfo:
@@ -64,9 +64,9 @@ class SubcomRecordInfo:
 
 class CycleHandler:
     record_info = {
-        "pvt": SubcomRecordInfo(PVTAncillatyData, 1),
-        "att": SubcomRecordInfo(AttitudeAncillatyData, 23),
-        "hk": SubcomRecordInfo(HKTemperatureAncillatyData, 42),
+        "pvt": SubcomRecordInfo(PVTAncillaryData, 1),
+        "att": SubcomRecordInfo(AttitudeAncillaryData, 23),
+        "hk": SubcomRecordInfo(HKTemperatureAncillaryData, 42),
     }
 
     def __init__(self):
@@ -181,7 +181,7 @@ class SubCommutatedDataDecoder:
         self._finalize_cycle()
 
     def decode(self, items: Optional[SubCommItem] = None):
-        """Deconde sub-commutated data."""
+        """Decode sub-commutated data."""
         if items is not None:
             for item in items:
                 self.feed(item)
@@ -200,7 +200,7 @@ class SubCommutatedDataDecoder:
                 continue
             out.append(item.decode())
         self._log.info(
-            "%d inclomplete sub-commutated data cycles.", incomplete_count
+            "%d incomplete sub-commutated data cycles.", incomplete_count
         )
         return out
 
@@ -227,10 +227,10 @@ def decode_stream(
         path to the L0 data component file.
     :param skip: int, optional
         number of ISPs to skip (starting form `byte_offset`).
-        Default: 0,
+        Default: 0.
     :param maxcount: int, optional
         maximum number of ISPs to decode (starting form `skip`).
-        Default: all remainimg ISPs in the file.
+        Default: all remaining ISPs in the file.
     :param byte_offset: int, optional
         offset in bytes, from the beginning of the binary file, to the
         first ISP (if the `skip` parameter is specified the count starts
@@ -240,7 +240,7 @@ def decode_stream(
         a 2 items tuple containing:
 
         * the decoded ISPs in form of (nested) dataclass structures
-        * a list of :class:`SubCommItem`s containing sub-commutated data
+        * a list of :class:`SubCommItem` s containing sub-commutated data
     """
     packet_counter: int = 0
     records: List[DecodedDataItem] = []
@@ -295,7 +295,7 @@ def decode_stream(
             sync = secondary_header.fixed_ancillary_data.sync_marker
             if sync != SYNC_MARKER:
                 raise SyncMarkerException(
-                    f"packat count: {packet_counter + 1}"
+                    f"packet count: {packet_counter + 1}"
                 )
 
             # -- Sub-commutation Ancillary Data Service
@@ -419,7 +419,7 @@ def isp_to_dict(
     secondary_header: Optional[SecondaryHeader] = None,
     enum_value: bool = False,
 ) -> dict:
-    """Converst promary and secondaty headers to dictionary."""
+    """Convert primary and secondary headers to dictionary."""
     data = bpack.asdict(primary_header)
     if secondary_header:
         sh = secondary_header
