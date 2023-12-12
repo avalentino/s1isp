@@ -268,7 +268,7 @@ def huffman_decode(
     idx0 = idx
     qe = np.empty(nq, dtype=np.uint8)
     for bidx in range(nb):
-        thidx_data[bidx] = np.packbits(bits[idx : idx + thidx_size])
+        thidx_data[bidx] = np.packbits(bits[idx : idx + thidx_size]).item()
         idx += thidx_size
         i0 = bidx * blocksize
         i1 = min(i0 + blocksize, nq)
