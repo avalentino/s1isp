@@ -51,7 +51,7 @@ api:
 	$(RM) -r docs/api
 	$(SPHINX_APIDOC) --module-first --separate --no-toc -o docs/api \
 	  --doc-project "$(TARGET) API" --templatedir docs/_templates/apidoc \
-	  $(TARGET)
+	  $(TARGET) $(TARGET)/tests
 
 docs:
 	$(MAKE) -C docs html
@@ -59,8 +59,8 @@ docs:
 clean:
 	$(RM) -r *.*-info build
 	find . -name __pycache__ -type d -exec $(RM) -r {} +
-	$(RM) s1isp/_huffman.c s1isp/*.so s1isp/*.o
 	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/*/__pycache__
+	$(RM) $(TARGET)/_*.c $(TARGET)/*.so $(TARGET)/*.o
 	if [ -f docs/makefile ] ; then $(MAKE) -C docs clean; fi
 	$(RM) -r docs/_build
 

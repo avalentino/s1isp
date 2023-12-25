@@ -64,5 +64,5 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          cd tests
           python -m pytest --cov=${PACKAGE} --cov-report=html --cov-report=term .
+        working-directory: tests

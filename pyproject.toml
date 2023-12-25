@@ -11,12 +11,7 @@ authors = [
 description = "Sentinel-1 Instrument Source Packets decoder"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.8"
-keywords = [
-    "satellite",
-    "decoder",
-    "isp",
-    "sentinel-1",
-]
+keywords = ["satellite", "decoder", "isp", "sentinel-1", "esa"]
 license = {text = "Apache-2.0"}
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -71,4 +66,5 @@ line_length = 79
 
 
 [tool.pydocstyle]
-add_ignore = "D105"
+add-ignore = "D105"
+# add-ignore = "D105", "D107"
