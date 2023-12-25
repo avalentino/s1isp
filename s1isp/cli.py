@@ -50,7 +50,7 @@ def dump_records(
     force: bool = False,
     udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
 ):
-    """Dump content od primary and secondary headers into an XLSX file."""
+    """Dump content of primary and secondary headers into an XLSX file."""
     output_format = EOutputFormat(output_format)
     if outfile is None:
         outfile = f"{pathlib.Path(filename).stem}.{output_format.value}"

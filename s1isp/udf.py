@@ -84,7 +84,7 @@ def align_quads(
     """Align decoded data channels.
 
     Align in phase (i) and in quadrature (q) components of even (e)
-    and odd (o) samples into a contiguois array of complex samples.
+    and odd (o) samples into a contiguous array of complex samples.
     """
     nq_max = min([len(ie), len(io), len(qe), len(qo)])
     if nq is None:
@@ -152,7 +152,7 @@ def baq_decode(
 ) -> np.ndarray:
     """Decode user data for data format C (Decimation + BAQ algorithm).
 
-    Sentinel-1 supports Block Adaptive Quantisation (BAQ) to 3, 4, and 5 bits.
+    Sentinel-1 supports Block Adaptive Quantization (BAQ) to 3, 4, and 5 bits.
 
     See section 4 and 4.3 of S1-IF-ASD-PL-0007.
     """
@@ -314,10 +314,10 @@ def fdbaq_decode(
     out: Optional[np.ndarray] = None,
     blocksize: int = BLOCKSIZE,
 ) -> np.ndarray:
-    """Decode user data for data format D (Decimatiion + FDBAQ algorithm).
+    """Decode user data for data format D (Decimation + FDBAQ algorithm).
 
-    FDBAQ is the Flexible Dynamic Block Adaptive Quantisation.
-    It is the baseline compression mode for echoes in sicence data.
+    FDBAQ is the Flexible Dynamic Block Adaptive Quantization.
+    It is the baseline compression mode for echoes in science data.
 
     See section 4 and 4.4 of S1-IF-ASD-PL-0007.
     """

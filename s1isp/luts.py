@@ -15,7 +15,7 @@ from .constants import REF_FREQ
 
 @dataclasses.dataclass(frozen=True)
 class RangeDecimationInfo:
-    """Range decipation parameters (S1-IF-ASD-PL-0007, section3.2.5.4)."""
+    """Range decimation parameters (S1-IF-ASD-PL-0007, section3.2.5.4)."""
 
     decimation_filer_band: float  # [Hz]
     decimation_ratio: Fraction
@@ -119,7 +119,7 @@ FILTER_OUTPUT_OFFSET_LUT = [
 
 
 def lookup_filter_output_offset(code: int) -> int:
-    """Return the value of the decimatiion filter output offset.
+    """Return the value of the decimation filter output offset.
 
     Values are defined in S1-IF-ASD-PL-0007, table 5.1-2.
 
@@ -130,11 +130,11 @@ def lookup_filter_output_offset(code: int) -> int:
     """
     offset = FILTER_OUTPUT_OFFSET_LUT[code]
     if offset is None:
-        raise IndexError(f"Invalid filter output ofset code: {code}.")
+        raise IndexError(f"Invalid filter output offset code: {code}.")
     return offset
 
 
-# TGU temerature calibration values in Celsius degrees
+# TGU temperature calibration values in Celsius degrees
 # (S1-IF-ASD-PL-0007, section 5.4.1)
 TGU_TEMPERATURE_LUT = [
     +116.14,
@@ -278,7 +278,7 @@ def lookup_tgu_temperature(code: int) -> float:
     return TGU_TEMPERATURE_LUT[code]
 
 
-# EFE temperature calibration valies in Celsius degrees
+# EFE temperature calibration values in Celsius degrees
 # (S1-IF-ASD-PL-0007, section 5.4.2)
 EFE_TEMPERATURE_LUT = [
     None,
@@ -596,7 +596,7 @@ SRM_LUT_B = {
 
 
 # S1-IF-ASD-PL-0007 section 5.2.2.1 Table 5.2-2
-# Normalised Reconstruction Levels
+# Normalized Reconstruction Levels
 BAQ_NRL_LUT = {
     EBaqMode.BAQ3: [0.2490, 0.7681, 1.3655, 2.1864],
     EBaqMode.BAQ4: [
@@ -631,7 +631,7 @@ BAQ_NRL_LUT = {
 
 
 # S1-IF-ASD-PL-0007 section 5.2.2.1 Table 5.2-2
-# Normalised Reconstruction Levels
+# Normalized Reconstruction Levels
 FDBAQ_NRL_LUT = {
     EBrcCode.BRC0: [0.3637, 1.0915, 1.8208, 2.6406],
     EBrcCode.BRC1: [0.3042, 0.9127, 1.5216, 2.1313, 2.8426],

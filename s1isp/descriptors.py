@@ -497,7 +497,7 @@ class RadarConfigurationSupportService:
         return self.swst / REF_FREQ * 1e-6
 
     def get_delta_t_suppr_sec(self) -> float:
-        """Duration of teh transient of teh decimation filter [s].
+        """Duration of the transient of the decimation filter [s].
 
         See (S1-IF-ASD-PL-0007, section 3.2.5.11).
         """

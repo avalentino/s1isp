@@ -56,7 +56,7 @@ class EEccNumber(enum.IntEnum):
 
 
 class ETestMode(enum.IntEnum):
-    """Test mode interpretatiion (S1-IF-ASD-PL-0007, section 3.2.2.4)."""
+    """Test mode interpretation (S1-IF-ASD-PL-0007, section 3.2.2.4)."""
 
     default = 0
     contingency_rxm_fully_operational = 4  # 100
