@@ -53,15 +53,15 @@ api:
 	  --doc-project "$(TARGET) API" --templatedir docs/_templates/apidoc \
 	  $(TARGET) $(TARGET)/tests
 
-docs:
-	$(MAKE) -C docs html
+docs: ext
+	$(MAKE) -C docs PYTHONPATH=.. html
 
 clean:
 	$(RM) -r *.*-info build
 	find . -name __pycache__ -type d -exec $(RM) -r {} +
 	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/*/__pycache__
 	$(RM) $(TARGET)/_*.c $(TARGET)/*.so $(TARGET)/*.o
-	if [ -f docs/makefile ] ; then $(MAKE) -C docs clean; fi
+	if [ -f docs/Makefile ] ; then $(MAKE) -C docs clean; fi
 	$(RM) -r docs/_build
 
 cleaner: clean
