@@ -206,9 +206,9 @@ class SubCommutatedDataDecoder:
 
 
 class EUdfDecodingMode(enum.Enum):
-    NONE = "none"
-    EXTRACT = "extract"
-    DECODE = "decode"
+    NONE = "none"  # skip the compressed user data
+    EXTRACT = "extract"  # extract the compressed data and return them
+    DECODE = "decode"  # decode the ISP use data
 
     def __str__(self):
         return self.value
