@@ -151,6 +151,8 @@ class ECalType(enum.IntEnum):
     epdn_cal = 2
     ta_cal = 3
     apdn_cal = 4
+    not_applicable_5 = 5
+    not_applicable_6 = 6
     tx_h_cal_iso = 7
 
 
