@@ -307,8 +307,10 @@ def decode_stream(
             subcom_data_records.append(sc_data_item)
 
             # -- Counters Service
-            cs = secondary_header.counters
-            assert packet_counter == cs.space_packet_count
+            # cs = secondary_header.counters
+            # The following assertion is incorrect for IW.
+            # We need a proper timeline checking mechanism.
+            # assert packet_counter == cs.space_packet_count
 
             # -- Radar Configuration Support Service
             rcss = secondary_header.radar_configuration_support
