@@ -32,6 +32,8 @@ __all__ = [
 
 SUB_COMM_LEN = 64
 
+_log = logging.getLogger(__name__)
+
 
 class DecodedDataItem(NamedTuple):
     primary_header: PrimaryHeader
@@ -348,7 +350,7 @@ def decode_stream(
                         udfbytes, nq, baqmod, tstmod, blocksize=blocksize
                     )
                 except Exception:
-                    logging.getLogger(__name__).debug(
+                    _log.debug(
                         f"packet_counter: {packet_counter}, "
                         f"pri_count: "
                         f"{secondary_header.counters.pri_count}, "
