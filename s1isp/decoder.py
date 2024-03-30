@@ -8,7 +8,6 @@ from typing import List, NamedTuple, Optional, Sequence, Tuple, Type, Union
 import tqdm
 import bpack
 
-from .udf import decode_ud
 from .constants import SYNC_MARKER
 from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
@@ -244,6 +243,11 @@ def decode_stream(
         * the decoded ISPs in form of (nested) dataclass structures
         * a list of :class:`SubCommItem` s containing sub-commutated data
     """
+    if udf_decoding_mode is EUdfDecodingMode.DECODE:
+        from .udf import decode_ud
+    else:
+        decode_ud = None
+
     packet_counter: int = 0
     records: List[DecodedDataItem] = []
     subcom_data_records: List[SubCommItem] = []
