@@ -39,7 +39,7 @@ BITS = bpack.EBaseUnits.BITS
 BE = bpack.EByteOrder.BE
 
 
-class SyncMarkerException(RuntimeError):
+class SyncMarkerError(RuntimeError):
     """Sync marker error."""
 
     pass
@@ -328,8 +328,8 @@ class SasData:
                 "SAS SSB Data with ssb_flag=True have no "
                 "elevation_beam_address field"
             )
-        else:
-            return self._dynamic_data
+
+        return self._dynamic_data
 
     def get_azimuth_beam_address(self, check: bool = True) -> int:
         """Return the azimuth beam address code.
@@ -342,8 +342,8 @@ class SasData:
                 "SAS SSB Data with ssb_flag=True have no "
                 "azimuth_beam_address field"
             )
-        else:
-            return self._beam_address
+
+        return self._beam_address
 
     def get_sas_test(self, check: bool = True) -> ESasTestMode:
         """Return the SAS Test flag.
@@ -355,8 +355,8 @@ class SasData:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no sas_test field"
             )
-        else:
-            return ESasTestMode((self._dynamic_data >> 3) & 0b0000001)
+
+        return ESasTestMode((self._dynamic_data >> 3) & 0b0000001)
 
     def get_cal_type(self, check: bool = True) -> ECalType:
         """Return the calibration type code.
@@ -368,8 +368,8 @@ class SasData:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no cal_type field"
             )
-        else:
-            return ECalType(self._dynamic_data & 0b00000111)
+
+        return ECalType(self._dynamic_data & 0b00000111)
 
     def get_calibration_beam_address(self, check: bool = True) -> int:
         """Return the calibration beam address code.
@@ -382,8 +382,8 @@ class SasData:
                 "SAS SSB Data with ssb_flag=False have no "
                 "calibration_beam_address field"
             )
-        else:
-            return self._beam_address
+
+        return self._beam_address
 
 
 @bpack.bs.decoder

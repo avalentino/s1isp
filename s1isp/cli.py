@@ -75,11 +75,11 @@ def dump_records(
     _log.info("Decoding complete (elapsed time %s).", elapsed)
 
     if output_format == EOutputFormat.PICKLE:
-        data = dict(
-            records=records,
-            offsets=offsets,
-            subcomm_data_records=subcomm_data_records,
-        )
+        data = {
+            "records": records,
+            "offsets": offsets,
+            "subcomm_data_records": subcomm_data_records,
+        }
         with open(outfile, "wb") as fd:
             pickle.dump(data, fd)
     # elif output_format == EOutputFormat.HDF5:
@@ -303,11 +303,9 @@ def main(*argv):
             force=args.force,
             udf_decoding_mode=args.data,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         _log.critical(
-            "unexpected exception caught: {!r} {}".format(
-                type(exc).__name__, exc
-            )
+            "unexpected exception caught: %r %s", type(exc).__name__, exc
         )
         _log.debug("stacktrace:", exc_info=True)
         exit_code = EX_FAILURE

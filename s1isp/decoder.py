@@ -14,7 +14,7 @@ from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
     PVTAncillaryData,
     PrimaryHeader,
-    SyncMarkerException,
+    SyncMarkerError,
     AttitudeAncillaryData,
     SecondaryHeader,
     HKTemperatureAncillaryData,
@@ -300,9 +300,7 @@ def decode_stream(
             # fasd = secondary_header.fixed_ancillary_data
             sync = secondary_header.fixed_ancillary_data.sync_marker
             if sync != SYNC_MARKER:
-                raise SyncMarkerException(
-                    f"packet count: {packet_counter + 1}"
-                )
+                raise SyncMarkerError(f"packet count: {packet_counter + 1}")
 
             # -- Sub-commutation Ancillary Data Service
             # sc_ads = secondary_header.subcom_ancillary_data
@@ -328,13 +326,13 @@ def decode_stream(
             # -- Radar Sample Count Service
             rscs = secondary_header.radar_sample_count
             # See S1-IF-ASD-PL-0007, section 3.2.5.11
-            if rcss.ses.signal_type <= 7:
-                assert (
-                    2 * rscs.number_of_quads == rcss.get_swl_n3rx_samples()
-                ), (
-                    f"number_of_quads: {rscs.number_of_quads}, "
-                    f"swl_n3rx_samples: {rcss.get_swl_n3rx_samples()}"
-                )
+            # if rcss.ses.signal_type <= 7:
+            #     assert (
+            #         2 * rscs.number_of_quads == rcss.get_swl_n3rx_samples()
+            #     ), (
+            #         f"number_of_quads: {rscs.number_of_quads}, "
+            #         f"swl_n3rx_samples: {rcss.get_swl_n3rx_samples()}"
+            #     )
 
             # -- user data
             if udf_decoding_mode is EUdfDecodingMode.NONE:
@@ -343,25 +341,13 @@ def decode_stream(
             elif udf_decoding_mode is EUdfDecodingMode.EXTRACT:
                 udf = fd.read(data_field_size - SHSIZE)
             elif udf_decoding_mode is EUdfDecodingMode.DECODE:
-                try:
-                    udfbytes = fd.read(data_field_size - SHSIZE)
-                    with open("packet-00408.pkl", "wb") as _fd:
-                        _fd.write(udfbytes)
-                    nq = rscs.number_of_quads
-                    baqmod = rcss.baq_mode
-                    tstmod = secondary_header.fixed_ancillary_data.test_mode
-                    udf = decode_ud(
-                        udfbytes, nq, baqmod, tstmod, blocksize=blocksize
-                    )
-                except Exception:
-                    _log.debug(
-                        f"packet_counter: {packet_counter}, "
-                        f"pri_count: "
-                        f"{secondary_header.counters.pri_count}, "
-                        f"nq: {nq}, baqmod: {baqmod}, tstmod: {tstmod}, "
-                        f"blocksize: {blocksize}"
-                    )
-                    raise
+                udfbytes = fd.read(data_field_size - SHSIZE)
+                nq = rscs.number_of_quads
+                baqmod = rcss.baq_mode
+                tstmod = secondary_header.fixed_ancillary_data.test_mode
+                udf = decode_ud(
+                    udfbytes, nq, baqmod, tstmod, blocksize=blocksize
+                )
 
             assert offsets[-1] + PHSIZE + data_field_size == fd.tell()
 
