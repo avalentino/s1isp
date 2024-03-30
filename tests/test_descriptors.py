@@ -30,7 +30,7 @@ def test_txcal(txcal_data, txcal_ref_data):
     assert primary_header.packet_data_length + 1 == len(txcal_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.tx_cal
+    assert rcss.ses.signal_type == ESignalType.TX_CAL
 
 
 def test_cal_sas(txcal_data, txcal_ref_data):
@@ -78,7 +78,7 @@ def test_noise(noise_data, noise_ref_data):
     assert primary_header.packet_data_length + 1 == len(noise_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.noise
+    assert rcss.ses.signal_type == ESignalType.NOISE
 
 
 def test_noise_sas(noise_data, noise_ref_data):
@@ -130,7 +130,7 @@ def test_echo(echo_data, echo_ref_data):
     assert primary_header.packet_data_length + 1 == len(echo_data) - PHSIZE
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.echo
+    assert rcss.ses.signal_type == ESignalType.ECHO
 
 
 def test_echo_sas(echo_data, echo_ref_data):

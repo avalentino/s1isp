@@ -43,13 +43,13 @@ def get_data_format_type(
     baqmod = EBaqMode(baqmod)
 
     bypass_modes = {
-        ETestMode.contingency_rxm_fully_bypassed,
-        ETestMode.bypass,
+        ETestMode.CONTINGENCY_RXM_FULLY_BYPASSED,
+        ETestMode.BYPASS,
     }
     oper_modes = {
-        ETestMode.default,
-        ETestMode.contingency_rxm_fully_operational,
-        ETestMode.oper,
+        ETestMode.DEFAULT,
+        ETestMode.CONTINGENCY_RXM_FULLY_OPERATIONAL,
+        ETestMode.OPER,
     }
 
     if tstmod in bypass_modes:
@@ -353,7 +353,7 @@ def decode_ud(
     data: bytes,
     nq: int,
     baqmod: EBaqMode,
-    tstmod: ETestMode = ETestMode.default,
+    tstmod: ETestMode = ETestMode.DEFAULT,
     *,
     out: Optional[np.ndarray] = None,
     blocksize: int = BLOCKSIZE,

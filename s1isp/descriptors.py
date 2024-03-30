@@ -86,12 +86,12 @@ class FixedAncillaryDataService:
 
     sync_marker: T["u32"] = SYNC_MARKER
     data_take_id: T["u32"] = 0
-    ecc_num: EEccNumber = bpack.field(size=8, default=EEccNumber.not_set)
+    ecc_num: EEccNumber = bpack.field(size=8, default=EEccNumber.NOT_SET)
     # n. 1 bit n/a
     test_mode: ETestMode = bpack.field(
-        size=3, offset=73, default=ETestMode.default
+        size=3, offset=73, default=ETestMode.DEFAULT
     )
-    rx_channel_id: ERxChannelId = bpack.field(size=4, default=ERxChannelId.rxv)
+    rx_channel_id: ERxChannelId = bpack.field(size=4, default=ERxChannelId.RXV)
     instrument_configuration_id: T["u32"] = 0  # NOTE: the data type is TBD
 
 
@@ -130,7 +130,7 @@ class PVTAncillaryData:
 class PointingStatus:
     """Pointing Status (S1-IF-ASD-PL-0007, table 3.2-8)."""
 
-    aocs_op_mode: T["u8"] = EAocsOpMode.no_mode
+    aocs_op_mode: T["u8"] = EAocsOpMode.NO_MODE
     roll_error: bool = bpack.field(default=False, offset=13)
     pitch_error: bool = False
     yaw_error: bool = False
@@ -244,10 +244,10 @@ class SasImgData:
 
     ssb_flag: bool = False
     polarization: EPolarization = bpack.field(
-        size=3, default=EPolarization.h_tx_only
+        size=3, default=EPolarization.H_TX_ONLY
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
-        size=2, default=ETemperatureCompensation.fe_off_ta_off
+        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
     )
     elevation_beam_address: T["u4"] = bpack.field(default=0, offset=8)
     azimuth_beam_address: T["u10"] = bpack.field(default=0, offset=14)
@@ -264,10 +264,10 @@ class SasCalData:
 
     ssb_flag: bool = False
     polarization: EPolarization = bpack.field(
-        size=3, default=EPolarization.h_tx_only
+        size=3, default=EPolarization.H_TX_ONLY
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
-        size=2, default=ETemperatureCompensation.fe_off_ta_off
+        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
     )
     sas_test: bool = bpack.field(default=0, offset=8)
     cal_type: T["u3"] = bpack.field(default=0)
@@ -285,10 +285,10 @@ class SasData:
 
     ssb_flag: bool = False
     polarization: EPolarization = bpack.field(
-        size=3, default=EPolarization.h_tx_only
+        size=3, default=EPolarization.H_TX_ONLY
     )
     temperature_compensation: ETemperatureCompensation = bpack.field(
-        size=2, default=ETemperatureCompensation.fe_off_ta_off
+        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
     )
     _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
     _beam_address: T["u10"] = bpack.field(default=0, offset=14)
@@ -393,7 +393,7 @@ class SesData:
 
     cal_mode: ECalMode = bpack.field(size=2, default=0)
     tx_pulse_number: T["u5"] = bpack.field(default=0, offset=3)
-    signal_type: ESignalType = bpack.field(size=4, default=ESignalType.echo)
+    signal_type: ESignalType = bpack.field(size=4, default=ESignalType.ECHO)
     swap: bool = bpack.field(default=False, offset=15)
     swath_number: T["u8"] = 0
 

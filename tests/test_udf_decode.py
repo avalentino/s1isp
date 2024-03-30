@@ -186,7 +186,7 @@ def test_decode_txcal(txcal_data, txcal_ref_data):
     secondary_header = SecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.tx_cal
+    assert rcss.ses.signal_type == ESignalType.TX_CAL
 
     nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
@@ -200,7 +200,7 @@ def test_decode_noise(noise_data, noise_ref_data):
     secondary_header = SecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.noise
+    assert rcss.ses.signal_type == ESignalType.NOISE
 
     nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
@@ -214,7 +214,7 @@ def test_decode_echo(echo_data, echo_ref_data):
     secondary_header = SecondaryHeader.frombytes(shdata)
 
     rcss = secondary_header.radar_configuration_support
-    assert rcss.ses.signal_type == ESignalType.echo
+    assert rcss.ses.signal_type == ESignalType.ECHO
 
     nq = secondary_header.radar_sample_count.number_of_quads
     baqmod = rcss.baq_mode
