@@ -9,5 +9,6 @@ per-file-ignores =
     tests/*: D
     */tests/*: D
     s1isp/descriptors.py: F821
+    s1isp/l0index.py: F821
 statistics = True
 count = True

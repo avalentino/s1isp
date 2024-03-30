@@ -31,7 +31,7 @@ dist:
 	$(PYTHON) -m build
 	$(PYTHON) -m twine check dist/*.tar.gz dist/*.whl
 
-check:
+check: ext
 	$(PYTHON) -m pytest
 
 fullcheck:
@@ -42,10 +42,10 @@ coverage:
 
 lint:
 	$(PYTHON) -m flake8 --count --statistics $(TARGET) tests
-	$(PYTHON) -m pydocstyle --count $(TARGET)
 	$(PYTHON) -m isort --check $(TARGET) tests
 	$(PYTHON) -m black --check $(TARGET) tests
 	# $(PYTHON) -m mypy --check-untyped-defs --ignore-missing-imports $(TARGET)
+	ruff check $(TARGET)
 
 api:
 	$(RM) -r docs/api
@@ -65,7 +65,10 @@ clean:
 	$(RM) -r docs/_build
 
 cleaner: clean
-	$(RM) -r .coverage htmlcov .pytest_cache .mypy_cache .tox .ipynb_checkpoints
+	$(RM) -r .coverage htmlcov
+	$(RM) -r .pytest_cache .tox
+	$(RM) -r .mypy_cache .ruff_cache
+	$(RM) -r .ipynb_checkpoints
 
 distclean: cleaner
 	$(RM) -r dist
