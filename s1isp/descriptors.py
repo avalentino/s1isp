@@ -76,7 +76,7 @@ class DatationService:
 
         The Fine Time represents the sub-second time stamp of the Space Packet.
         """
-        return (self.fine_time + 0.5) * 2**-16
+        return (self.fine_time + 0.5) * 2.0**-16
 
 
 @bpack.bs.decoder
