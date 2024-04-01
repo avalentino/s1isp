@@ -264,7 +264,7 @@ def decode_stream(
 
             # primary header
             data = fd.read(PHSIZE)
-            if len(data) == 0 or (maxcount and len(records) > maxcount):
+            if len(data) == 0 or (maxcount and len(records) >= maxcount):
                 break
 
             # type - PrimaryHeader
