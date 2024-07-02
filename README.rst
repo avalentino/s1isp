@@ -34,11 +34,15 @@ The relevant specification documents used to write the `s1isp` software are:
 Requirements and Installation
 -----------------------------
 
-The package requires Cython and the `bitstruct` module. Install them with the following commands::
+The package requires Cython and the `bitstruct` module. These dependencies are managed automatically by `setuptools` and the `pyproject.toml` file. To install the package, use the following command::
 
-    pip install -r requirements.txt
+    python3 -m pip install .
 
-Build the package with::
+For editable mode, use::
+
+    python3 -m pip install --editable .
+
+Compile the cpp bindings with::
 
     make ext
 
