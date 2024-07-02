@@ -44,8 +44,7 @@ For editable mode, use::
 
 For optional dependencies, use::
 
-python3 -m pip install s1isp[cli,hdf5,polars]
-
+    python3 -m pip install s1isp[cli,hdf5,polars]
 
 Compile the cpp bindings with::
 
