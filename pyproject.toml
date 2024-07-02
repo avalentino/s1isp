@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Utilities",
 ]
-dependencies = ["bpack[bs,np]", "numpy", "tqdm","bitstruct","bpack"]
+dependencies = ["bpack[bs,np]", "numpy", "tqdm"]
 dynamic = ["version"]
 
 
