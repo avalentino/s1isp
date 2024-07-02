@@ -31,6 +31,18 @@ The relevant specification documents used to write the `s1isp` software are:
    https://sentinels.copernicus.eu/documents/247904/2142675/Sentinel-1-SAR-Space-Packet-Protocol-Data-Unit.pdf
 
 
+Requirements and Installation
+-----------------------------
+
+The package requires Cython and the `bitstruct` module. Install them with the following commands::
+
+    pip install cython
+    pip install bitstruct
+
+Build the package with::
+
+    make ext
+
 License
 -------
 
