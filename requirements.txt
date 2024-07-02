@@ -1,0 +1,5 @@
+Cython==3.0.10
+bitstruct==8.19.0
+pandas==2.2.2
+numpy==1.26.4
+hdf5==1.10.6

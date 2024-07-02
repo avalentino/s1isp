@@ -36,8 +36,7 @@ Requirements and Installation
 
 The package requires Cython and the `bitstruct` module. Install them with the following commands::
 
-    pip install cython
-    pip install bitstruct
+    pip install -r requirements.txt
 
 Build the package with::
 
