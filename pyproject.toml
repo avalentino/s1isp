@@ -22,12 +22,12 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Utilities",
 ]
-dependencies = ["bpack[bs,np]", "numpy", "tqdm"]
+dependencies = ["bpack[bs,np]", "numpy", "tqdm","bitstruct","bpack"]
 dynamic = ["version"]
 
 
 [project.optional-dependencies]
-cli = ["tqdm", "argcomplete"]
+cli = ["tqdm", "argcomplete","pandas","polars","hdf5"]
 
 
 [project.urls]
