@@ -25,6 +25,7 @@ from .descriptors import (
 __all__ = [
     "isp_to_dict",
     "decode_stream",
+    "decoded_subcomm_to_dict",
     "decoded_stream_to_dict",
     "SubCommutatedDataDecoder",
 ]
@@ -467,4 +468,20 @@ def decoded_stream_to_dict(
         )
         out.append(metadata)
 
+    return out
+
+def decoded_subcomm_to_dict(
+    subcom_decoded: List,
+) -> List[dict]:
+    """Convert a list of decoded subcomm data into a list of merged dictionaries."""
+    merge_dict = lambda a, b, c: {**a, **b, **c}
+    
+    out = []
+    for record in subcom_decoded:
+        pvt_dict = bpack.asdict(record.pvt)
+        att_dict = bpack.asdict(record.att)
+        hk_dict = bpack.asdict(record.hk)
+        merged_dict = merge_dict(pvt_dict, att_dict, hk_dict)
+        out.append(merged_dict)
+    
     return out
