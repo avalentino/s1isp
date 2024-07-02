@@ -27,7 +27,7 @@ dynamic = ["version"]
 
 
 [project.optional-dependencies]
-cli = ["tqdm", "argcomplete","pandas","polars","hdf5"]
+cli = ["tqdm", "argcomplete","pandas[hdf5]"]
 
 
 [project.urls]
