@@ -34,21 +34,71 @@ The relevant specification documents used to write the `s1isp` software are:
 Requirements and Installation
 -----------------------------
 
-The package requires Cython and the `bitstruct` module. These dependencies are managed automatically by `setuptools` and the `pyproject.toml` file. To install the package, use the following command::
+The package requires Cython and the `bitstruct` module. These dependencies are
+managed automatically by `setuptools` and the `pyproject.toml` file.
 
-    python3 -m pip install .
+To install the package, use the following command::
+
+    $ python3 -m pip install .
 
 For editable mode, use::
 
-    python3 -m pip install --editable .
+    $ python3 -m pip install --editable .
 
 For optional dependencies, use::
 
-    python3 -m pip install s1isp[cli,hdf5,polars]
+    $ python3 -m pip install s1isp[cli,hdf5]
 
-Compile the cpp bindings with::
+The extension for Huffman decoding can be built locally using::
 
-    make ext
+    $ make ext
+
+
+Command line interface (CLI)
+----------------------------
+
+The package has a simple CLI::
+
+    $ python3 -m s1isp -h
+    usage: s1isp [-h] [--version]
+                [--loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                [-q] [-v] [-d] [-o OUTFILE] [--skip SKIP] [--maxcount MAXCOUNT]
+                [--bytes_offset BYTES_OFFSET] [--enum-value]
+                [--output-format {pkl,h5,csv,xlsx}] [--force]
+                [--data {none,extract,decode}]
+                filename
+
+    Sentinel-1 Instrument Source Packets decoder Command Line Interface.
+
+    positional arguments:
+    filename              RAW data file name
+
+    options:
+    -h, --help            show this help message and exit
+    --version             show program's version number and exit
+    --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                            logging level (default: INFO)
+    -q, --quiet           suppress standard output messages, only errors are
+                            printed to screen
+    -v, --verbose         print verbose output messages
+    -d, --debug           print debug messages
+    -o OUTFILE, --outfile OUTFILE
+                            output file name for metadata (default file with
+                            the same basename of the input stored in the
+                            current working directory)
+    --skip SKIP           number of ISPs to skip at the beginning of the file
+    --maxcount MAXCOUNT   number of ISPs to dump
+    --bytes_offset BYTES_OFFSET
+                            number bytes to skip at the beginning of the file
+    --enum-value          dump the enum numeric value instead of the symbolic name
+    --output-format {pkl,h5,csv,xlsx}, --of {pkl,h5,csv,xlsx}
+                            specify the output format
+                            (default: <EOutputFormat.PICKLE: 'pkl'>)
+    --force               overwtire the output file if it already exists
+    --data {none,extract,decode}
+                            control the management of the user data field data
+                            (default: 'none')
+
 
 License
 -------
