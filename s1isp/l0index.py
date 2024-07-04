@@ -19,3 +19,20 @@ class BlockDescriptor:
     data_units_offset: T["u4"]
     byte_offset: T["i8"]
     variable_size_flag: bool
+
+
+@bpack.st.codec
+@bpack.descriptor(size=26, byteorder=EByteOrder.BE, baseunits=EBaseUnits.BYTES)
+class AnnotationDataDescriptor:
+    """Descriptor for L0 annotation data component files."""
+
+    sensing_time_days: T["u2"]
+    sensing_time_milliseconds: T["u4"]
+    sensing_time_microseconds: T["u2"]
+    downlink_time_days: T["u2"]
+    downlink_time_milliseconds: T["u4"]
+    downlink_time_microseconds: T["u2"]
+    packe_length: T["u2"]
+    frames: T["u2"]
+    missing_frames: T["u2"]
+    crc_flag: bool
