@@ -479,7 +479,6 @@ def decoded_subcomm_to_dict(
     """
     def merge_dict(a, b, c):
         return {**a, **b, **c}
-
     out = []
     for record in subcom_decoded:
         pvt_dict = bpack.asdict(record.pvt)
@@ -487,5 +486,5 @@ def decoded_subcomm_to_dict(
         hk_dict = bpack.asdict(record.hk)
         merged_dict = merge_dict(pvt_dict, att_dict, hk_dict)
         out.append(merged_dict)
-    
+
     return out
