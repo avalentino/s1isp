@@ -475,6 +475,7 @@ def decoded_subcomm_to_dict(
     subcom_decoded: List,
 ) -> List[dict]:
     """Convert a list of decoded subcomm into a list of dictionaries."""
+
     def merge_dict(a, b, c):
         return {**a, **b, **c}
 
