@@ -470,12 +470,16 @@ def decoded_stream_to_dict(
 
     return out
 
+
 def decoded_subcomm_to_dict(
     subcom_decoded: List,
 ) -> List[dict]:
-    """Convert a list of decoded subcomm data into a list of merged dictionaries."""
-    merge_dict = lambda a, b, c: {**a, **b, **c}
-    
+    """Convert a list of decoded subcomm data into a list of merged
+    dictionaries.
+    """
+    def merge_dict(a, b, c):
+        return {**a, **b, **c}
+
     out = []
     for record in subcom_decoded:
         pvt_dict = bpack.asdict(record.pvt)
