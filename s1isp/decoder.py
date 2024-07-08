@@ -477,8 +477,10 @@ def decoded_subcomm_to_dict(
     """Convert a list of decoded subcomm data into a list of merged
     dictionaries.
     """
+
     def merge_dict(a, b, c):
         return {**a, **b, **c}
+
     out = []
     for record in subcom_decoded:
         pvt_dict = bpack.asdict(record.pvt)
