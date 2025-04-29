@@ -20,7 +20,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.python-version }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.x"]
+        python-version: ["3.10", "3.x"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
@@ -59,8 +59,9 @@ jobs:
       - name: Install
         shell: bash
         run: |
+          WHEEL=$(ls dist/${PACKAGE}-*.whl)
           python -m pip install --upgrade pip
-          python -m pip install dist/${PACKAGE}-*.whl
+          python -m pip install ${WHEEL}[cli,s1aux]
 
       - name: Install test dependencies
         shell: bash
@@ -69,7 +70,7 @@ jobs:
           if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
 
       - name: Test
+        working-directory: tests
         shell: bash
         run: |
           python -m pytest --cov=${PACKAGE} --cov-report=html --cov-report=term .
-        working-directory: tests

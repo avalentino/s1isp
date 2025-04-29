@@ -10,13 +10,13 @@ authors = [
 ]
 description = "Sentinel-1 Instrument Source Packets decoder"
 readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 keywords = ["satellite", "decoder", "isp", "sentinel-1", "esa"]
 license = {text = "Apache-2.0"}
+# license-files = ["LICEN[CS]E*"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering",
@@ -30,6 +30,10 @@ dynamic = ["version"]
 cli = ["tqdm", "argcomplete"]
 hdf5 = ["pandas[hdf5]"]
 polars = ["polars"]
+s1aux = ["s1aux"]
+
+[project.scripts]
+s1isp = "s1isp.cli:main"
 
 
 [project.urls]
@@ -49,22 +53,49 @@ packages = ["s1isp"]
 version = {attr = "s1isp.__version__"}
 
 
-# [tool.pytest.ini_options]
+[tool.pytest.ini_options]
 # addopts = "--ignore=examples/"
+addopts = [
+    "--import-mode=importlib",
+]
 
 
 [tool.black]
 line-length = 79
+preview = true
+enable-unstable-feature = [
+    "hug_parens_with_braces_and_square_brackets",
+    "multiline_string_handling",
+    "string_processing",
+    "wrap_long_dict_values_in_parens",
+]
 # target-version = ['py311']
 
 
 [tool.isort]
 profile = "black"
 length_sort = true
+multi_line_output = 3
 no_inline_sort = true
 include_trailing_comma = true
 use_parentheses = true
 line_length = 79
+# force_grid_wrap = 0
+# ensure_newline_before_comments = true
+known_first_party = ["s1isp"]
+
+
+[tool.pydocstyle]
+add-ignore = ["D105"]
+# add-ignore = ["D105", "D107"]
+match='(?!(test_|conf)).*\.py'
+
+
+[tool.codespell]
+skip = "*.pdf,*.pp,*.ipynb,./htmlcov,./docs/spelling_wordlist.txt"
+count = true
+quiet-level = 3
+ignore-words-list = "nd"
 
 
 [tool.ruff]
@@ -75,85 +106,104 @@ line-length = 79
 
 
 [tool.ruff.lint]
+preview = true
 select = [
-    "E",    # E/W pycodestyle
-    "W",    # E/W pycodestyle
-    "F",    # F Pyflakes
-    "D",    # D pydocstyle
-    "N",    # N pep8-naming
-    # "I",    # I isort
-    "B",    # B flake8-bugbear
-    "C90",  # C90 mccabe
-    "UP",   #  UP pyupgrade
-    "YTT",  # YTT flake8-2020
-    # "ANN",  # ANN flake8-annotations
-            #ASYNC flake8-async
-            #TRIO flake8-trio
-    # "S",    #   S flake8-bandit
-    "BLE",  # BLE flake8-blind-except
-    # "FBT",  # FBT flake8-boolean-trap
-    "A",    #   A flake8-builtins
-    # "COM",  # COM flake8-commas
-            # CPY flake8-copyright
-    "C4",   #  C4 flake8-comprehensions
-    "DTZ",  # DTZ flake8-datetimez
-            # T10 flake8-debugger
-            #  DJ flake8-django
-    # "EM",   #  EM flake8-errmsg
-    "EXE",  # EXE flake8-executable
-    # "FA",   #  FA flake8-future-annotations
-    "ISC",  # ISC flake8-implicit-str-concat
-    "ICN",  # ICN flake8-import-conventions
-    "G",    #   G flake8-logging-format
-    "INP",  # INP flake8-no-pep420
-            # PIE flake8-pie
-    "T20",  # T20 flake8-print
-            # PYI flake8-pyi
-    # "PT",   #  PT flake8-pytest-style
-    "Q",    #   Q flake8-quotes
-    "RSE",  # RSE flake8-raise
-    "RET",  # RET flake8-return
-    # "SLF",  # SLF flake8-self
-            #SLOT flake8-slots
-            # SIM flake8-simplify
-            # TID flake8-tidy-imports
-            # TCH flake8-type-checking
-            # INT flake8-gettext
-    # "ARG",  # ARG flake8-unused-arguments
-    # "PTH",  # PTH flake8-use-pathlib
-            #  TD flake8-todos
-            # FIX flake8-fixme
-            # ERA eradicate
-            #  PD pandas-vet
-            # PGH pygrep-hooks
-    # "PL",   #  PL Pylint
-            # TRY tryceratops
-            # FLY flynt
-    "NPY",  # NPY NumPy-specific rules
-            # AIR Airflow
-            #PERF Perflint
-            #FURB refurb
-            # LOG flake8-logging
-            # RUF Ruff-specific rules
+    # ruff --version  # ruff 0.11.6
+    "E",        #  E/W pycodestyle
+    "W",        #  E/W pycodestyle
+    "F",        #    F Pyflakes
+    "D",        #    D pydocstyle
+    "N",        #    N pep8-naming
+    # "I",      #    I isort
+    "C90",      #  C90 mccabe
+    "UP",       #   UP pyupgrade
+    # --- flake8 ---
+    "YTT",      #  YTT flake8-2020
+    # "ANN",    #  ANN flake8-annotations
+    # "ASYNC",  #ASYNC flake8-async
+    # "S",      #    S flake8-bandit
+    "BLE",      #  BLE flake8-blind-except
+    # "FBT",    #  FBT flake8-boolean-trap
+    "B",        #    B flake8-bugbear
+    "A",        #    A flake8-builtins
+    # "COM",    #  COM flake8-commas
+    "C4",       #   C4 flake8-comprehensions
+    # "CPY",    #  CPY flake8-copyright
+    "DTZ",      #  DTZ flake8-datetimez
+    # "T10",    #  T10 flake8-debugger
+    # "DJ",     #   DJ flake8-django
+    # "EM",     #   EM flake8-errmsg
+    "EXE",      #  EXE flake8-executable
+    # "FIX",    #  FIX flake8-fixme
+    # "FA",     #   FA flake8-future-annotations
+    # "INT",    #  INT flake8-gettext
+    "ISC",      #  ISC flake8-implicit-str-concat
+    "ICN",      #  ICN flake8-import-conventions
+    # "LOG",    #  LOG flake8-logging
+    "G",        #    G flake8-logging-format
+    "INP",      #  INP flake8-no-pep420
+    "PIE",      #  PIE flake8-pie
+    "T20",      #  T20 flake8-print
+    # "PYI",    #  PYI flake8-pyi
+    # "PT",     #   PT flake8-pytest-style
+    "Q",        #    Q flake8-quotes
+    "RSE",      #  RSE flake8-raise
+    "RET",      #  RET flake8-return
+    # "SLF",    #  SLF flake8-self
+    # "SIM",    #  SIM flake8-simplify
+    #"SLOT",    # SLOT flake8-slots
+    # "TID",    #  TID flake8-tidy-imports
+    # "TD",     #   TD flake8-todos
+    # "TC",     #   TC flake8-type-checking
+    # "ARG",    #  ARG flake8-unused-arguments
+    # "PTH",    #  PTH flake8-use-pathlib
+    # --- misc ---
+    # "AIR",    #  AIR Airflow
+    # "ERA",    #  ERA eradicate
+    # "FAST",   # FAST FastAPI
+    # "FLY",    #  FLY flynt
+    "NPY",      #  NPY NumPy-specific rules
+    # "PD",     #   PD pandas-vet
+    # "PERF",   # PERF Perflint
+    # "DOC",    #  DOC pydoclint
+    # "PGH",    #  PGH pygrep-hooks
+    # "PL",     #   PL Pylint
+    # "FURB",   # FURB refurb
+    # "RUF",    #  RUF Ruff-specific rules
+    # "TRY",    #  TRY tryceratops
 ]
 extend-ignore = [
     "D105",     # D105 Missing docstring in magic method
-    "D107",     # D107 Missing docstring in `__init__`
+    # "D107",     # D107 Missing docstring in `__init__`
     "D203",     # D203 1 blank line required before class docstring
     "D213",     # D213 Multi-line docstring summary should start at the second line
+    "ISC001",   # ISC001 Implicitly concatenated string literals on one line
     "PLR2004",  # PLR2004 Magic value used in comparison, consider replacing 2 with a constant variable
-    "PLR0913",  # PLR0913 Too many arguments in function definition
+    # "PLR0913",  # PLR0913 Too many arguments in function definition
+    # "PLW1514",  # PLW1514 `open` in text mode without explicit `encoding` argument
     "RET504",   # RET504 Unnecessary assignment before `return` statement
     "RET505",   # RET505 Unnecessary `elif` after `return` statement
 ]
 
 
+[tool.ruff.format]
+preview = true
+docstring-code-format = true
+
+
 [tool.ruff.lint.per-file-ignores]
 "**/{tests}/*" = ["D"]
+"**/{notebooks}/*.ipynb" = ["D", "T20", "C901"]
+"docs/conf.py" = ["D", "INP001"]
 "s1isp/descriptors.py" = ["F821"]
 "s1isp/l0index.py" = ["F821"]
 "s1isp/cli.py" = ["DTZ005"]
+"notebooks/generate-ref-data.ipynb" = ["E501", "N813"]
 
 
 [tool.ruff.lint.isort]
 length-sort = true
+
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"xml.etree.ElementTree" = "etree"

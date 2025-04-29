@@ -1,1 +1,6 @@
 include src/huffman.*
+include requirements-test.txt
+recursive-include docs *.rst *.txt Makefile make.bat conf.py
+prune docs/_build
+recursive-include tests *.py
+recursive-include tests/data *.dat *.npz *.json
