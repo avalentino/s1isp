@@ -167,6 +167,7 @@ class ECalMode(enum.IntEnum):
 class ESignalType(enum.IntEnum):
     """SES Signal Type (S1-IF-ASD-PL-0007, section 3.2.5.14.3)."""
 
+    SILENT = -1  # NOTE: not in the specification but needed for the timeline
     ECHO = 0
     NOISE = 1
     TX_CAL = 8
