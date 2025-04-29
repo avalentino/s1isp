@@ -24,7 +24,7 @@ def _get_version(filename):
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "s1isp"
-copyright = "2023, Antonio Valentino"
+copyright = "2023-2025, Antonio Valentino"
 author = "Antonio Valentino"
 release = _get_version(
     pathlib.Path(__file__).parent.parent / "s1isp" / "__init__.py"
