@@ -11,13 +11,11 @@ decoded version of the data::
 Download
 ========
 
-Download the entire product form the DHUS via sentinelsat_:
+Download the entire product form the CDSE via cdsetool_:
 
 .. code-block:: shell
 
-    $ sentinelsat \
-    --name S1B_S3_RAW__0SDV_20200615T162409_20200615T162435_022046_029D76_F3E6 \
-    --download
+    $ cdsetool download SENTINEL-1 --search-term identifier=3ea94798-0c4f-557b-8470-ad8834150420 .
 
 
 Download only the relevant data files (e.g. for the VVpolarization) from
@@ -37,5 +35,5 @@ Direct URLs:
 
 .. _`Sentinel-1 Level-0 Data Decoding Package`:
     https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/document-library/-/asset_publisher/1dO7RF5fJMbd/content/id/3316522?_com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_1dO7RF5fJMbd
-.. _sentinelsat: https://sentinelsat.readthedocs.io
+.. _cdsetool: https://github.com/CDSETool/CDSETool
 .. _asfsmd: https://github.com/avalentino/asfsmd
