@@ -2,14 +2,15 @@
 
 import numpy as np
 import bitstruct as bs
-from test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
-from test_huffman import NSAMPLES as BLOCKSIZE
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
 from s1isp.enums import ESignalType
 from s1isp.constants import PRIMARY_HEADER_SIZE as PHSIZE
 from s1isp.constants import SECONDARY_HEADER_SIZE as SHSIZE
 from s1isp.descriptors import SecondaryHeader
+
+from .test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
+from .test_huffman import NSAMPLES as BLOCKSIZE
 
 
 def make_quats(nq: int = 100):
@@ -70,9 +71,9 @@ def make_bypass(nbits: int = 10):
     pad = nwords * 16 - nq * nbits
 
     if pad:
-        fmt = f">{'u10'*nq}p{pad}"
+        fmt = f">{'u10' * nq}p{pad}"
     else:
-        fmt = f">{'u10'*nq}"
+        fmt = f">{'u10' * nq}"
 
     data = b"".join([bs.pack(fmt, *seq) for seq in [ie, io, qe, qo]])
 

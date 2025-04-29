@@ -3,7 +3,8 @@
 import io
 import enum
 import logging
-from typing import List, NamedTuple, Optional, Sequence, Tuple, Type, Union
+from typing import NamedTuple
+from collections.abc import Sequence
 
 import tqdm
 import bpack
@@ -38,7 +39,7 @@ _log = logging.getLogger(__name__)
 class DecodedDataItem(NamedTuple):
     primary_header: PrimaryHeader
     secondary_header: SecondaryHeader
-    udf: Optional[Union[bytes, Sequence[float]]] = None
+    udf: bytes | Sequence[float] | None = None
 
 
 class SubCommItem(NamedTuple):
@@ -53,7 +54,7 @@ class DecodedSubCommData(NamedTuple):
 
 
 class SubcomRecordInfo:
-    def __init__(self, record_type: Type, word_index: int):
+    def __init__(self, record_type: type, word_index: int):
         self.size: int = bpack.calcsize(record_type, bpack.EBaseUnits.BYTES)
         self.record_type = record_type
         self.first_word_index: int = word_index
@@ -72,7 +73,7 @@ class CycleHandler:
     }
 
     def __init__(self):
-        self.data: List[SubCommutatedAncillaryDataService] = []
+        self.data: list[SubCommutatedAncillaryDataService] = []
 
     def is_complete(self) -> bool:
         return len(self.data) == SUB_COMM_LEN
@@ -107,8 +108,8 @@ class SubCommutatedDataDecoder:
 
     def __init__(self):
         """Initialize the decoder."""
-        self._cycle_data: List[CycleHandler] = []
-        self._current_cycle_handler: Optional[CycleHandler] = None
+        self._cycle_data: list[CycleHandler] = []
+        self._current_cycle_handler: CycleHandler | None = None
         self._packet_count = None
         self._log: logging.Logger = logging.getLogger(
             f"{__name__}.{self.__class__.__name__}"
@@ -119,7 +120,7 @@ class SubCommutatedDataDecoder:
         if handler:
             if not handler.is_complete():
                 self._log.warning(
-                    f"Incomplete sub-commutated data cycle: "
+                    "Incomplete sub-commutated data cycle: "
                     f"{len(self._cycle_data)}"
                 )
             self._cycle_data.append(handler)
@@ -155,7 +156,7 @@ class SubCommutatedDataDecoder:
             self._new_cycle()
             if data_word_index != 1:
                 self._log.warning(
-                    f"Starting an incomplete sub-commutated data cycle. "
+                    "Starting an incomplete sub-commutated data cycle. "
                     f"(first index: {data_word_index}."
                 )
             self._append_data(item)
@@ -182,7 +183,7 @@ class SubCommutatedDataDecoder:
         """Finalize the input queue."""
         self._finalize_cycle()
 
-    def decode(self, items: Optional[SubCommItem] = None):
+    def decode(self, items: SubCommItem | None = None):
         """Decode sub-commutated data."""
         if items is not None:
             for item in items:
@@ -218,11 +219,11 @@ class EUdfDecodingMode(enum.Enum):
 
 def decode_stream(
     filename,
-    skip: Optional[int] = None,
-    maxcount: Optional[int] = None,
+    skip: int | None = None,
+    maxcount: int | None = None,
     bytes_offset: int = 0,
     udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
-) -> Tuple[List[DecodedDataItem], List[int], List[SubCommItem]]:
+) -> tuple[list[DecodedDataItem], list[int], list[SubCommItem]]:
     """Decode packet headers.
 
     :param filename:
@@ -251,9 +252,9 @@ def decode_stream(
         decode_ud = None
 
     packet_counter: int = 0
-    records: List[DecodedDataItem] = []
-    subcom_data_records: List[SubCommItem] = []
-    offsets: List[int] = []
+    records: list[DecodedDataItem] = []
+    subcom_data_records: list[SubCommItem] = []
+    offsets: list[int] = []
     pbar = tqdm.tqdm(unit=" packets", desc="decoded")
     with open(filename, "rb") as fd, pbar:
         if bytes_offset:
@@ -402,7 +403,7 @@ def _radar_cfg_to_dict(rcss):
 
 
 def _enum_value_to_name(data):
-    """Rplace enum values with their symbolic name."""
+    """Replace enum values with their symbolic name."""
     for key, value in data.items():
         if isinstance(value, enum.Enum):
             data[key] = value.name
@@ -412,7 +413,7 @@ def _enum_value_to_name(data):
 
 def isp_to_dict(
     primary_header: PrimaryHeader,
-    secondary_header: Optional[SecondaryHeader] = None,
+    secondary_header: SecondaryHeader | None = None,
     enum_value: bool = False,
 ) -> dict:
     """Convert primary and secondary headers to dictionary."""
@@ -449,9 +450,9 @@ def isp_to_dict(
 
 
 def decoded_stream_to_dict(
-    records: List[DecodedDataItem],
+    records: list[DecodedDataItem],
     enum_value: bool = False,
-) -> List[dict]:
+) -> list[dict]:
     """Convert a list of decoded ISPs into a list of metadata dictionaries."""
     out = []
     for record in records:
@@ -465,8 +466,8 @@ def decoded_stream_to_dict(
 
 
 def decoded_subcomm_to_dict(
-    subcom_decoded: List,
-) -> List[dict]:
+    subcom_decoded: list,
+) -> list[dict]:
     """Convert a list of decoded subcomm into a list of dictionaries."""
 
     def merge_dict(a, b, c):

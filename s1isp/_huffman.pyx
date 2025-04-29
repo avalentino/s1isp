@@ -36,11 +36,11 @@ def decode(
     Negative values are encoded into uint8 samples as follows::
 
       [0, 1,, 2, 3, -0, -1, -2, -3] --> [0, 1,, 2, 3, 4, 5, 6, 7]
-    
+
     Please note that the double "zero" value (positive and negative) is
     preserved to allow to univocally map the returned values to the original
     data.
-    
+
     :param data: np.ndarray or typed memory view of uint8 values
         bits of the Huffman encoded data store one per (uint8) element.
         The sequence can be obtained using the np.unpackbits function.
@@ -53,7 +53,7 @@ def decode(
         if provided the the decoded data are stored in the 'out' array.
     :param count: bool
         when the flag is set to true the function returns the count of
-        consumed bits as additional outpuT (default: False) 
+        consumed bits as additional outpuT (default: False)
     :returns:
         the Huffman decoded data.
 
@@ -93,9 +93,8 @@ def decode(
         raise HuffmanDecodingError(
             f"Not enaough data to decode the requested samples ({nsamples})."
         )
-    
+
     if count:
         return np.asarray(out), idx
     else:
         return np.asarray(out)
-

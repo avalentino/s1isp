@@ -6,7 +6,6 @@ in the "Sentinel-1 SAR Space Packet Protocol Data Unit" document
 """
 
 import enum
-from typing import Optional
 
 import numpy as np
 import bpack.np
@@ -58,9 +57,9 @@ def get_data_format_type(
     elif tstmod in oper_modes:
         if baqmod == EBaqMode.BYPASS:
             return EDataFormatType.B
-        elif baqmod in {EBaqMode.BAQ3, EBaqMode.BAQ4, EBaqMode.BAQ5}:
+        if baqmod in {EBaqMode.BAQ3, EBaqMode.BAQ4, EBaqMode.BAQ5}:
             return EDataFormatType.C
-        elif baqmod in {
+        if baqmod in {
             EBaqMode.FDBAQ_MODE_0,
             EBaqMode.FDBAQ_MODE_1,
             EBaqMode.FDBAQ_MODE_2,
@@ -77,7 +76,7 @@ def align_quads(
     io: np.ndarray,
     qe: np.ndarray,
     qo: np.ndarray,
-    nq: Optional[int] = None,
+    nq: int | None = None,
     *,
     out: np.ndarray = None,
 ) -> np.ndarray:
@@ -107,7 +106,7 @@ def bypass_decode(
     data: bytes,
     nq: int,
     *,
-    out: Optional[np.ndarray] = None,
+    out: np.ndarray | None = None,
 ) -> np.ndarray:
     """Decode user data for data format A and B (bypass algorithm).
 
@@ -147,7 +146,7 @@ def baq_decode(
     nq: int,
     baqmod: EBaqMode,
     *,
-    out: Optional[np.ndarray] = None,
+    out: np.ndarray | None = None,
     blocksize: int = BLOCKSIZE,
 ) -> np.ndarray:
     """Decode user data for data format C (Decimation + BAQ algorithm).
@@ -311,7 +310,7 @@ def fdbaq_decode(
     data: bytes,
     nq: int,
     *,
-    out: Optional[np.ndarray] = None,
+    out: np.ndarray | None = None,
     blocksize: int = BLOCKSIZE,
 ) -> np.ndarray:
     """Decode user data for data format D (Decimation + FDBAQ algorithm).
@@ -333,7 +332,9 @@ def fdbaq_decode(
     decoded_qe = np.empty(nq, dtype=np.float32)
     decoded_qo = np.empty(nq, dtype=np.float32)
 
-    for bidx, (brc, thidx) in enumerate(zip(brc_data, thidx_data)):
+    for bidx, (brc, thidx) in enumerate(
+        zip(brc_data, thidx_data, strict=True)
+    ):
         i0 = bidx * blocksize
         i1 = min(i0 + blocksize, nq)
 
@@ -355,7 +356,7 @@ def decode_ud(
     baqmod: EBaqMode,
     tstmod: ETestMode = ETestMode.DEFAULT,
     *,
-    out: Optional[np.ndarray] = None,
+    out: np.ndarray | None = None,
     blocksize: int = BLOCKSIZE,
 ) -> np.ndarray:
     """Decode user data for data."""
@@ -363,13 +364,13 @@ def decode_ud(
 
     if data_format_type == EDataFormatType.A:
         return bypass_decode(data, nq)
-    elif data_format_type == EDataFormatType.B:
+    if data_format_type == EDataFormatType.B:
         return bypass_decode(data, nq)
-    elif data_format_type == EDataFormatType.C:
+    if data_format_type == EDataFormatType.C:
         return baq_decode(
             data, nq, baqmod=baqmod, blocksize=blocksize, out=out
         )
-    elif data_format_type == EDataFormatType.D:
+    if data_format_type == EDataFormatType.D:
         return fdbaq_decode(data, nq, blocksize=blocksize, out=out)
-    else:
-        raise ValueError(f"Invalid data format type: '{data_format_type}'.")
+
+    raise ValueError(f"Invalid data format type: '{data_format_type}'.")

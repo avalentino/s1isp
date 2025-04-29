@@ -25,7 +25,7 @@ Planned features and improvements
   (HDF5/NetCDF, Zarr)
 * Read AUX-INS files
 * Timeline check (using info included in the AUX-INS)
-* Check LUTs agains AUX-INS info
+* Check LUTs against AUX-INS info
 * Integrity checks
 * Tool for merging multiple L0 products belonging to the same data-take
 * Tool for generating L0C and L0N from L0S

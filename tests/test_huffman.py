@@ -1,7 +1,6 @@
 """Unit tests for Huffman decoding."""
 
 import itertools
-from typing import Optional
 
 import numpy as np
 import pytest
@@ -124,7 +123,7 @@ HCODE_LUTS = {
 }
 
 
-def get_huffman_data(brc: int, nsamples: Optional[int] = None):
+def get_huffman_data(brc: int, nsamples: int | None = None):
     codes = list(HUFFMAN_CODES[brc].keys())
     values = list(HUFFMAN_CODES[brc].values())
 

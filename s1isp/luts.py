@@ -5,7 +5,6 @@ document (S1-IF-ASD-PL-0007) issue 13.
 """
 
 import dataclasses
-from typing import List
 from fractions import Fraction
 from functools import lru_cache
 
@@ -20,7 +19,7 @@ class RangeDecimationInfo:
     decimation_filer_band: float  # [Hz]
     decimation_ratio: Fraction
     filter_length: int  # samples
-    swaths: List[str]
+    swaths: list[str]
 
     @property
     def sampling_frequency(self) -> float:

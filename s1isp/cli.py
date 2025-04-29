@@ -7,7 +7,6 @@ import logging
 import pathlib
 import argparse
 import datetime
-from typing import Optional
 
 from . import __version__
 from .decoder import decode_stream, decoded_stream_to_dict, EUdfDecodingMode
@@ -41,10 +40,10 @@ class EOutputFormat(enum.Enum):
 
 def dump_records(
     filename,
-    outfile: Optional[str] = None,
+    outfile: str | None = None,
     output_format: EOutputFormat = EOutputFormat.PICKLE,
-    skip: Optional[int] = None,
-    maxcount: Optional[int] = None,
+    skip: int | None = None,
+    maxcount: int | None = None,
     bytes_offset: int = 0,
     enum_value: bool = False,
     force: bool = False,
@@ -61,7 +60,7 @@ def dump_records(
         else:
             raise FileExistsError(f"File already exists: {outfile}")
 
-    _log.info(f"Start decoding: '{filename}' ...")
+    _log.info("Start decoding: %(filename)r ...", filename)
     t0 = datetime.datetime.now()
 
     records, offsets, subcomm_data_records = decode_stream(
@@ -145,8 +144,10 @@ def _add_logging_control_args(
         dest="loglevel",
         action="store_const",
         const="ERROR",
-        help="suppress standard output messages, "
-        "only errors are printed to screen",
+        help=(
+            "suppress standard output messages, "
+            "only errors are printed to screen"
+        ),
     )
     parser.add_argument(
         "-v",
@@ -187,8 +188,10 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
     parser.add_argument(
         "-o",
         "--outfile",
-        help="output file name for metadata (default file with the "
-        "same basename of the input stored in the current working directory)",
+        help=(
+            "output file name for metadata (default file with the same"
+            " basename of the input stored in the current working directory)"
+        ),
     )
     parser.add_argument(
         "--skip",
@@ -232,8 +235,10 @@ def get_parser(subparsers=None) -> argparse.ArgumentParser:
         choices=EUdfDecodingMode,
         type=EUdfDecodingMode,
         default=EUdfDecodingMode.NONE,
-        help="control the management of the user data field data "
-        "(default: '%(default)s')",
+        help=(
+            "control the management of the user data field data "
+            "(default: '%(default)s')"
+        ),
     )
 
     # Positional arguments

@@ -5,7 +5,6 @@ Space Packet Protocol Data Unit" document (S1-IF-ASD-PL-0007) issue 13.
 """
 
 import math
-from typing import Union
 
 import bpack
 import bpack.bs
@@ -41,8 +40,6 @@ BE = bpack.EByteOrder.BE
 
 class SyncMarkerError(RuntimeError):
     """Sync marker error."""
-
-    pass
 
 
 @bpack.bs.decoder
@@ -293,7 +290,7 @@ class SasData:
     _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
     _beam_address: T["u10"] = bpack.field(default=0, offset=14)
 
-    def get_sas_data(self) -> Union[SasImgData, SasCalData]:
+    def get_sas_data(self) -> SasImgData | SasCalData:
         """Return the specific SAS data record according to the sas_flag.
 
         If the `ssb_flag` is True than and `SasImgData` instance is
@@ -307,15 +304,15 @@ class SasData:
                 self.get_elevation_beam_address(),
                 self.get_azimuth_beam_address(),
             )
-        else:
-            return SasCalData(
-                self.ssb_flag,
-                self.polarization,
-                self.temperature_compensation,
-                self.get_sas_test(),
-                self.get_cal_type(),
-                self.get_calibration_beam_address(),
-            )
+
+        return SasCalData(
+            self.ssb_flag,
+            self.polarization,
+            self.temperature_compensation,
+            self.get_sas_test(),
+            self.get_cal_type(),
+            self.get_calibration_beam_address(),
+        )
 
     def get_elevation_beam_address(self, check: bool = True) -> int:
         """Return the elevation beam address code.

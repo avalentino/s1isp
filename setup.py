@@ -1,8 +1,7 @@
 """Setup script for s1isp."""
 
-import setuptools
 import numpy as np
-
+import setuptools
 
 extensions = [
     setuptools.Extension(
