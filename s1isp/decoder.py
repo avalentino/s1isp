@@ -239,9 +239,10 @@ def decode_stream(
         at this offset).
         Default: 0.
     :returns:
-        a 2 items tuple containing:
+        a 3 items tuple containing:
 
         * the decoded ISPs in form of (nested) dataclass structures
+        * offsets of ISPs
         * a list of :class:`SubCommItem` s containing sub-commutated data
     """
     if udf_decoding_mode is EUdfDecodingMode.DECODE:
