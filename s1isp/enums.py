@@ -10,7 +10,6 @@ import enum
 class EEccNumber(enum.IntEnum):
     """ECC Code Interpretation (S1-IF-ASD-PL-0007, table 3.2-4)."""
 
-    # TODO: check "not_set"
     NOT_SET = 0  # contingency: reserved for ground testing or mode upgrading
     S1 = 1
     S2 = 2
@@ -19,7 +18,7 @@ class EEccNumber(enum.IntEnum):
     S5_N = 5
     S6 = 6
     IW = 8
-    WM = 9
+    WV = 9
     S5_S = 10
     S1_NO_ICAL = 11
     S2_NO_ICAL = 12
@@ -39,7 +38,7 @@ class EEccNumber(enum.IntEnum):
     S5_S_NO_ICAL = 26
     S6_NO_ICAL = 27
     EN_S3_NO_ICAL = 31
-    EN = 32
+    EW = 32
     AN_S1_NO_ICAL = 33
     AN_S3_NO_ICAL = 34
     AN_S6_NO_ICAL = 35
@@ -173,7 +172,7 @@ class ESignalType(enum.IntEnum):
     TX_CAL = 8
     RX_CAL = 9
     EPDN_CAL = 10
-    TA_CAL = 11
+    TA_CAL = 11  # NOTE: TXH_CAL_ISO for S1C and S1D
     APDN_CAL = 12
     TXH_CAL_ISO = 15
 
