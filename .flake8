@@ -24,7 +24,7 @@ doctests = true
 # - SC  # flake8-spellcheck: too aggressive
 # - CNL  # flake8-class-newline: incompatible with black
 # extend-ignore = E203,W503,D105,D107,SC,CNL  # D* are also in pyproject.toml
-extend-ignore = E203,W503,D105,SC,ANN,C812,CF,E800,FNE,G,NIC002,PL,PT028,RST304,S403,S101,SIM114,TYP,VNE
+extend-ignore = E203,W503,D105,SC,ANN,C812,CF,D412,E800,FNE,G,NIC002,PL,PT028,RST304,S403,S101,SIM114,TYP,VNE
 extend-select = W504
 per-file-ignores =
     tests/*: D,S,I900
@@ -34,6 +34,7 @@ per-file-ignores =
     s1isp/cli.py: NQA102
     s1isp/decoder.py: CCR001,TC003,R504
     s1isp/descriptors.py: F821,TC002
+    s1isp/eccprogram.py: S001
     s1isp/l0index.py: F821
     tests/test_luts.py: D,CCR001
 statistics = True
