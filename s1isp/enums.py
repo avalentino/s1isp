@@ -186,3 +186,115 @@ class EBrcCode(enum.IntEnum):
     BRC2 = 2
     BRC3 = 3
     BRC4 = 4
+
+
+class ESequenceType(enum.Enum):
+    """Enumeration for Sequence types."""
+
+    PREAMBLE = "PREAMBLE"
+    IMAGING = "IMAGING"
+    POSTAMBLE = "POSTAMBLE"
+
+
+class ESensorMode(enum.Enum):
+    """Enumeration for sensor modes."""
+
+    S1 = "S1"
+    S2 = "S2"
+    S3 = "S3"
+    S4 = "S4"
+    S5 = "S5"
+    S6 = "S6"
+    IW = "IW"
+    EW = "EW"
+    WV = "WV"
+    RF = "RF"
+    EN = "EN"
+    N1 = "N1"
+    N2 = "N2"
+    N3 = "N3"
+    N4 = "N4"
+    N5 = "N5"
+    N6 = "N6"
+
+
+_ECC_NUM_TO_SENSOR_MODE: dict[EEccNumber, ESensorMode | None] = {
+    EEccNumber.NOT_SET: None,
+    EEccNumber.S1: ESensorMode.S1,
+    EEccNumber.S2: ESensorMode.S2,
+    EEccNumber.S3: ESensorMode.S3,
+    EEccNumber.S4: ESensorMode.S4,
+    EEccNumber.S5_N: ESensorMode.S5,
+    EEccNumber.S6: ESensorMode.S6,
+    EEccNumber.IW: ESensorMode.IW,
+    EEccNumber.WV: ESensorMode.WV,
+    EEccNumber.S5_S: ESensorMode.S5,
+    EEccNumber.S1_NO_ICAL: ESensorMode.S1,
+    EEccNumber.S2_NO_ICAL: ESensorMode.S2,
+    EEccNumber.S3_NO_ICAL: ESensorMode.S3,
+    EEccNumber.S4_NO_ICAL: ESensorMode.S4,
+    EEccNumber.RFC: ESensorMode.RF,
+    EEccNumber.TEST: None,
+    EEccNumber.EN_S3: ESensorMode.EN,
+    EEccNumber.AN_S1: ESensorMode.N1,
+    EEccNumber.AN_S2: ESensorMode.N2,
+    EEccNumber.AN_S3: ESensorMode.N3,
+    EEccNumber.AN_S4: ESensorMode.N4,
+    EEccNumber.AN_S5_N: ESensorMode.N5,
+    EEccNumber.AN_S5_S: ESensorMode.N5,
+    EEccNumber.AN_S6: ESensorMode.N6,
+    EEccNumber.S5_N_NO_ICAL: ESensorMode.S5,
+    EEccNumber.S5_S_NO_ICAL: ESensorMode.S5,
+    EEccNumber.S6_NO_ICAL: ESensorMode.S6,
+    EEccNumber.EN_S3_NO_ICAL: ESensorMode.EN,
+    EEccNumber.EW: ESensorMode.EW,
+    EEccNumber.AN_S1_NO_ICAL: ESensorMode.N1,
+    EEccNumber.AN_S3_NO_ICAL: ESensorMode.N3,
+    EEccNumber.AN_S6_NO_ICAL: ESensorMode.N6,
+    EEccNumber.NC_S1: None,
+    EEccNumber.NC_S2: None,
+    EEccNumber.NC_S3: None,
+    EEccNumber.NC_S4: None,
+    EEccNumber.NC_S5_N: None,
+    EEccNumber.NC_S5_S: None,
+    EEccNumber.NC_S6: None,
+    EEccNumber.NC_EW: None,
+    EEccNumber.NC_IW: None,
+    EEccNumber.NC_WM: None,
+}
+
+
+def ecc_number_to_sensor_mode(ecc_number: EEccNumber) -> ESensorMode | None:
+    """Return the sensor mode associated to the input ECC number."""
+    if ecc_number not in _ECC_NUM_TO_SENSOR_MODE:
+        raise ValueError(f"invalid ecc_number: {ecc_number!r}")
+    return _ECC_NUM_TO_SENSOR_MODE[ecc_number]
+
+
+class ESwath(enum.Enum):
+    """Enumeration for swaths."""
+
+    S1 = "S1"
+    S2 = "S2"
+    S3 = "S3"
+    S4 = "S4"
+    S5 = "S5"
+    S6 = "S6"
+    IW1 = "IW1"
+    IW2 = "IW2"
+    IW3 = "IW3"
+    EW1 = "EW1"
+    EW2 = "EW2"
+    EW3 = "EW3"
+    EW4 = "EW4"
+    EW5 = "EW5"
+    WV1 = "WV1"
+    WV2 = "WV2"
+    RF = "RF"
+    EN = "EN"
+    N1 = "N1"
+    N2 = "N2"
+    N3 = "N3"
+    N4 = "N4"
+    N5 = "N5"
+    N6 = "N6"
