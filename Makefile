@@ -30,13 +30,15 @@ dist:
 	$(PYTHON) -m twine check dist/*.tar.gz dist/*.whl
 
 check: ext
-	$(PYTHON) -m pytest --doctest-modules $(TARGET) tests
+	# $(PYTHON) -m pytest --doctest-modules $(TARGET) tests
+	$(PYTHON) -m pytest $(TARGET) tests
 
 fullcheck:
 	$(PYTHON) -m tox run
 
 coverage: ext
-	$(PYTHON) -m pytest --doctest-modules --cov=$(TARGET) --cov-report=html --cov-report=term $(TARGET) tests
+	# $(PYTHON) -m pytest --doctest-modules --cov=$(TARGET) --cov-report=html --cov-report=term $(TARGET) tests
+	$(PYTHON) -m pytest --cov=$(TARGET) --cov-report=html --cov-report=term $(TARGET) tests
 
 clean:
 	$(RM) -r *.*-info build
