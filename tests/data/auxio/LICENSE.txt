@@ -1,0 +1,52 @@
+Files: tests/data/v*
+Copyright: 2014-2024 European Commission
+License: sentinel-data-legal-notice
+ Copernicus Sentinel data 2014-2024
+ .
+ Legal notice on the use of Copernicus Sentinel Data and Service Information
+ The access and use of Copernicus Sentinel Data and Service Information is
+ regulated under EU law. In particular, the law provides that users shall
+ have a free, full and open access to Copernicus Sentinel Data and Service
+ Information without any express or implied warranty, including as regards
+ quality and suitability for any purpose.
+ .
+ EU law grants free access to Copernicus Sentinel Data and Service Information
+ for the purpose of the following use in so far as it is lawful:
+ .
+  (a) reproduction;
+  (b) distribution;
+  (c) communication to the public;
+  (d) adaptation, modification and combination with other data and information;
+  (e) any combination of points (a) to (d).
+ .
+ EU law allows for specific limitations of access and use in the rare cases of
+ security concerns, protection of third party rights or risk of service
+ disruption.
+ .
+ By using Sentinel Data or Service Information the user acknowledges that
+ these conditions are applicable to him/her and that the user renounces to
+ any claims for damages against the European Union and the providers of the
+ said Data and Information. The scope of this waiver encompasses any dispute,
+ including contracts and torts claims, that might be filed in court, in
+ arbitration or in any other form of dispute settlement.
+ .
+ Where the user communicates to the public or distributes Copernicus Sentinel
+ Data and Service Information, he/she shall inform the recipients of the
+ source of that Data and Information by using the following notice:
+ .
+  (1) 'Copernicus Sentinel data [Year]' for Sentinel data; and/or
+  (2) 'Copernicus Service information [Year]' for Copernicus Service
+      Information.
+ .
+ Where the Copernicus Sentinel Data and Service Information have been adapted
+ or modified, the user shall provide the following notice:
+ .
+  (1) 'Contains modified Copernicus Sentinel data [Year]' for Sentinel data;
+      and/or
+  (2) 'Contains modified Copernicus Service information [Year]' for Copernicus
+      Service Information.
+ .
+ The users' rights on their personal data are protected under European law.
+ Such data will only be used by the European Commission and the providers of
+ the said Data and Information for providing services to the user and for
+ statistical as well as evaluation purposes.
