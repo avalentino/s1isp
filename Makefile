@@ -62,6 +62,7 @@ lint:
 	$(PYTHON) -m pydocstyle --count $(TARGET)
 	$(PYTHON) -m isort --check $(TARGET) tests
 	$(PYTHON) -m black --check $(TARGET) tests
+	# $(PYTHON) -m fawltydeps
 	# $(PYTHON) -m mypy --check-untyped-defs --ignore-missing-imports $(TARGET)
 	ruff check $(TARGET)
 	codespell

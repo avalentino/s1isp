@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "Cython", "numpy"]
+requires = ["setuptools>=77.0.0", "Cython", "numpy"]
 build-backend = "setuptools.build_meta"
 
 
@@ -12,8 +12,8 @@ description = "Sentinel-1 Instrument Source Packets decoder"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.10"
 keywords = ["satellite", "decoder", "isp", "sentinel-1", "esa"]
-license = {text = "Apache-2.0"}
-# license-files = ["LICEN[CS]E*"]
+license = "Apache-2.0"
+license-files = ["LICEN[CS]E*"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -53,9 +53,15 @@ packages = ["s1isp"]
 version = {attr = "s1isp.__version__"}
 
 
+[tool.cibuildwheel]
+skip = "pp*"
+test-requires = "pytest"
+test-command = "pytest -v {project}/tests"
+
+
 [tool.pytest.ini_options]
-# addopts = "--ignore=examples/"
 addopts = [
+    # "--ignore=examples/",
     "--import-mode=importlib",
 ]
 
@@ -70,6 +76,7 @@ enable-unstable-feature = [
     "wrap_long_dict_values_in_parens",
 ]
 # target-version = ['py311']
+# extend-exclude = "packagename/parse/*"
 
 
 [tool.isort]
@@ -83,25 +90,31 @@ line_length = 79
 # force_grid_wrap = 0
 # ensure_newline_before_comments = true
 known_first_party = ["s1isp"]
+# skip_glob = ["packagename/parse/*"]
 
 
 [tool.pydocstyle]
+convention = "numpy"
 add-ignore = ["D105"]
 # add-ignore = ["D105", "D107"]
 match='(?!(test_|conf)).*\.py'
 
 
 [tool.codespell]
-skip = "*.pdf,*.pp,*.ipynb,./htmlcov,./docs/spelling_wordlist.txt"
+skip = "*.pdf,*.pp,*.ipynb,./htmlcov,./docs/spelling_wordlist.txt,./data"
 count = true
 quiet-level = 3
 ignore-words-list = "nd"
 
 
+# [tool.mypy]
+# plugins = ["numpy.typing.mypy_plugin"]. # deprecated
+
+
 [tool.ruff]
 line-length = 79
 # indent-width = 4
-# target-version = "py39"
+# target-version = "py310"
 # extend-exclude = ["packagename/parse/*"]
 
 
@@ -151,7 +164,7 @@ select = [
     "RET",      #  RET flake8-return
     # "SLF",    #  SLF flake8-self
     # "SIM",    #  SIM flake8-simplify
-    #"SLOT",    # SLOT flake8-slots
+    # "SLOT",   # SLOT flake8-slots
     # "TID",    #  TID flake8-tidy-imports
     # "TD",     #   TD flake8-todos
     # "TC",     #   TC flake8-type-checking
@@ -207,3 +220,7 @@ length-sort = true
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
 "xml.etree.ElementTree" = "etree"
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"  # Accepts: "google", "numpy", or "pep257".

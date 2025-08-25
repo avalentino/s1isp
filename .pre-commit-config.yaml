@@ -15,17 +15,17 @@ repos:
     -   id: detect-private-key
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.8
+    rev: v0.12.5
     hooks:
     -   id: ruff
         args: [--fix]
     -   id: ruff-format
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.20.0
     hooks:
     -   id: pyupgrade
-        args: [--py310-plus]
+        args: [--py39-plus]
 #         exclude: |
 #             (?x)^(
 #                 file1.txt|
@@ -33,7 +33,7 @@ repos:
 #             )
 
 -   repo: https://github.com/pycqa/flake8
-    rev: 7.2.0
+    rev: 7.3.0
     hooks:
     -   id: flake8
 
@@ -53,17 +53,27 @@ repos:
     rev: 25.1.0
     hooks:
     -   id: black
-        language_version: python3.9
+        # language_version: python3.10
     -   id: black-jupyter
-        language_version: python3.9
+        # language_version: python3.10
+
+# -   repo: https://github.com/tweag/FawltyDeps
+#     rev: v0.20.0
+#     hooks:
+#     -   id: check-undeclared
+#     -   id: check-unused
 
 # -   repo: https://github.com/pre-commit/mirrors-mypy
-#     rev: v1.15.0
+#     rev: v1.17.0
 #     hooks:
 #     -   id: mypy
 #         additional_dependencies:
 #         -   tokenize-rt==3.2.0
 #         -   numpy>=1.21
+#         exclude: |
+#             (?x)^(
+#                 docs/conf.py
+#             )
 
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
