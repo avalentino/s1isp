@@ -4,10 +4,10 @@ import numpy as np
 import bitstruct as bs
 
 from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
-from s1isp.enums import ESignalType
+from s1isp.enums import ESignalTypeS1AB as ESignalType
 from s1isp.constants import PRIMARY_HEADER_SIZE as PHSIZE
 from s1isp.constants import SECONDARY_HEADER_SIZE as SHSIZE
-from s1isp.descriptors import SecondaryHeader
+from s1isp.descriptors import SecondaryHeaderS1AB as SecondaryHeader
 
 from .test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
 from .test_huffman import NSAMPLES as BLOCKSIZE

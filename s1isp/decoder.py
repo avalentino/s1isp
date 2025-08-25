@@ -3,6 +3,7 @@
 import io
 import enum
 import logging
+import pathlib
 from typing import NamedTuple
 from collections.abc import Sequence
 
@@ -17,7 +18,8 @@ from .descriptors import (
     PrimaryHeader,
     SyncMarkerError,
     AttitudeAncillaryData,
-    SecondaryHeader,
+    SecondaryHeaderS1AB,
+    SecondaryHeaderS1CD,
     HKTemperatureAncillaryData,
     SubCommutatedAncillaryDataService,
 )
@@ -38,7 +40,7 @@ _log = logging.getLogger(__name__)
 
 class DecodedDataItem(NamedTuple):
     primary_header: PrimaryHeader
-    secondary_header: SecondaryHeader
+    secondary_header: SecondaryHeaderS1AB | SecondaryHeaderS1CD
     udf: bytes | Sequence[float] | None = None
 
 
@@ -223,6 +225,7 @@ def decode_stream(
     maxcount: int | None = None,
     bytes_offset: int = 0,
     udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
+    platform_id: str | None = None,
 ) -> tuple[list[DecodedDataItem], list[int], list[SubCommItem]]:
     """Decode packet headers.
 
@@ -239,6 +242,10 @@ def decode_stream(
         first ISP (if the `skip` parameter is specified the count starts
         at this offset).
         Default: 0.
+    :platform_id: str, optional
+        identifier of the platform: "S1A", "S1B", "S1C" or "S1D".
+        If not provided, it is automatically computed from `filename`
+        (assuming that the standard naming convention is used).
     :returns:
         a 3 items tuple containing:
 
@@ -250,6 +257,18 @@ def decode_stream(
         from .udf import decode_ud
     else:
         decode_ud = None
+
+    SecondaryHeader: SecondaryHeaderS1AB | SecondaryHeaderS1CD  # noqa: N806
+    if platform_id is None:
+        platform_id = pathlib.Path(filename).name[:3].upper()
+        if platform_id in {"S1A", "S1B"}:
+            SecondaryHeader = SecondaryHeaderS1AB  # noqa: N806
+        elif platform_id in {"S1C", "S1D"}:
+            SecondaryHeader = SecondaryHeaderS1CD  # noqa: N806
+        else:
+            raise ValueError(
+                f"unable to determine the 'platform_id' for '{filename}'"
+            )
 
     packet_counter: int = 0
     records: list[DecodedDataItem] = []
@@ -413,7 +432,7 @@ def _enum_value_to_name(data):
 
 def isp_to_dict(
     primary_header: PrimaryHeader,
-    secondary_header: SecondaryHeader | None = None,
+    secondary_header: SecondaryHeaderS1AB | SecondaryHeaderS1CD | None = None,
     enum_value: bool = False,
 ) -> dict:
     """Convert primary and secondary headers to dictionary."""

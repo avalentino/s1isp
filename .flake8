@@ -24,7 +24,7 @@ doctests = true
 # - SC  # flake8-spellcheck: too aggressive
 # - CNL  # flake8-class-newline: incompatible with black
 # extend-ignore = E203,W503,D105,D107,SC,CNL  # D* are also in pyproject.toml
-extend-ignore = E203,W503,D105,SC,ANN,C812,CF,E800,FNE,G,NIC002,PL,PT028,RST304,S403,S101,SIM114,TYP,VNE
+extend-ignore = E203,W503,D105,SC,ANN,C812,CF,E800,FNE,G,NIC002,PL,PT028,RST304,S403,S101,SIM114,TYP,VNE,I
 extend-select = W504
 per-file-ignores =
     tests/*: D,S,I900
@@ -42,7 +42,7 @@ extend-exclude = notebooks
 
 # flake8-cognitive-complexity
 # max-cognitive-complexity = 7  # default
-max-cognitive-complexity = 12
+max-cognitive-complexity = 13
 
 # flake8-noqa
 noqa-require-code = True

@@ -19,14 +19,16 @@ from .luts import (
 from .enums import (
     EBaqMode,
     ECalMode,
-    ECalType,
     ETestMode,
     EEccNumber,
     EAocsOpMode,
-    ESignalType,
+    ECalTypeS1AB,
+    ECalTypeS1CD,
     ERxChannelId,
     ESasTestMode,
     EPolarization,
+    ESignalTypeS1AB,
+    ESignalTypeS1CD,
     ERangeDecimation,
     ETemperatureCompensation,
 )
@@ -157,7 +159,10 @@ class AttitudeAncillaryData:
 class HKTemperatureAncillaryData:
     """Antenna and TGU temperature HouseKeeping Data.
 
-    See S1-IF-ASD-PL-0007, table 3.2-9.
+    See S1-IF-ASD-PL-0007 and S1CD-IF-ASD-IF01-0005, table 3.2-9.
+
+    Please note that the `tgu_temperature` field is only meaningful for
+    Sentinel-1A and Sentinel-1B.
     """
 
     temperature_update_status: T["u16"] = 0
@@ -271,25 +276,7 @@ class SasCalData:
     calibration_beam_address: T["u10"] = bpack.field(default=0, offset=14)
 
 
-@bpack.bs.decoder
-@bpack.descriptor(baseunits=BITS, byteorder=BE)
-class SasData:
-    """SAS SSB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
-
-    The SAS SSB Data field indicates the actual configuration of the
-    SAR Antenna Subsystem (SAS).
-    """
-
-    ssb_flag: bool = False
-    polarization: EPolarization = bpack.field(
-        size=3, default=EPolarization.H_TX_ONLY
-    )
-    temperature_compensation: ETemperatureCompensation = bpack.field(
-        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
-    )
-    _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
-    _beam_address: T["u10"] = bpack.field(default=0, offset=14)
-
+class _SasDataMixin:
     def get_sas_data(self) -> SasImgData | SasCalData:
         """Return the specific SAS data record according to the sas_flag.
 
@@ -355,7 +342,7 @@ class SasData:
 
         return ESasTestMode((self._dynamic_data >> 3) & 0b0000001)
 
-    def get_cal_type(self, check: bool = True) -> ECalType:
+    def get_cal_type(self, check: bool = True) -> int:
         """Return the calibration type code.
 
         Please note that if `ssb_flag` is `False` and `check` is `True` then
@@ -365,8 +352,7 @@ class SasData:
             raise TypeError(
                 "SAS SSB Data with ssb_flag=False have no cal_type field"
             )
-
-        return ECalType(self._dynamic_data & 0b00000111)
+        return int(self._dynamic_data & 0b00000111)
 
     def get_calibration_beam_address(self, check: bool = True) -> int:
         """Return the calibration beam address code.
@@ -385,42 +371,93 @@ class SasData:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class SesData:
+class SasDataS1AB(_SasDataMixin):
+    """SAS SSB Data (S1-IF-ASD-PL-0007, section 3.2.5.13).
+
+    The SAS SSB Data field indicates the actual configuration of the
+    SAR Antenna Subsystem (SAS).
+    """
+
+    ssb_flag: bool = False
+    polarization: EPolarization = bpack.field(
+        size=3, default=EPolarization.H_TX_ONLY
+    )
+    temperature_compensation: ETemperatureCompensation = bpack.field(
+        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
+    )
+    _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
+    _beam_address: T["u10"] = bpack.field(default=0, offset=14)
+
+    def get_cal_type(self, check: bool = True) -> ECalTypeS1AB:
+        """Return the calibration type code.
+
+        Please note that if `ssb_flag` is `False` and `check` is `True` then
+        an TypeError is raised.
+        """
+        return ECalTypeS1AB(super().get_cal_type(check))
+
+
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class SasDataS1CD(_SasDataMixin):
+    """SAS SSB Data (S1CD-IF-ASD-IF01-0005, section 3.2.5.13).
+
+    The SAS SSB Data field indicates the actual configuration of the
+    SAR Antenna Subsystem (SAS).
+    """
+
+    ssb_flag: bool = False
+    polarization: EPolarization = bpack.field(
+        size=3, default=EPolarization.H_TX_ONLY
+    )
+    temperature_compensation: ETemperatureCompensation = bpack.field(
+        size=2, default=ETemperatureCompensation.FE_OFF_TA_OFF
+    )
+    _dynamic_data: T["u4"] = bpack.field(default=0, offset=8)
+    _beam_address: T["u10"] = bpack.field(default=0, offset=14)
+
+    def get_cal_type(self, check: bool = True) -> ECalTypeS1CD:
+        """Return the calibration type code.
+
+        Please note that if `ssb_flag` is `False` and `check` is `True` then
+        an TypeError is raised.
+        """
+        return ECalTypeS1CD(super().get_cal_type(check))
+
+
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class SesDataS1AB:
     """SES SBB Data (S1-IF-ASD-PL-0007, section 3.2.5.14)."""
 
     cal_mode: ECalMode = bpack.field(size=2, default=0)
     tx_pulse_number: T["u5"] = bpack.field(default=0, offset=3)
-    signal_type: ESignalType = bpack.field(size=4, default=ESignalType.ECHO)
+    signal_type: ESignalTypeS1AB = bpack.field(
+        size=4, default=ESignalTypeS1AB.ECHO
+    )
     swap: bool = bpack.field(default=False, offset=15)
     swath_number: T["u8"] = 0
 
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class RadarConfigurationSupportService:
+class SesDataS1CD:
+    """SES SBB Data (S1CD-IF-ASD-IF01-0005, section 3.2.5.14)."""
+
+    cal_mode: ECalMode = bpack.field(size=2, default=0)
+    tx_pulse_number: T["u5"] = bpack.field(default=0, offset=3)
+    signal_type: ESignalTypeS1CD = bpack.field(
+        size=4, default=ESignalTypeS1CD.ECHO
+    )
+    swap: bool = bpack.field(default=False, offset=15)
+    swath_number: T["u8"] = 0
+
+
+class _RadarConfigurationSupportServiceMixin:
     """Radar Configuration Support Service.
 
-    See S1-IF-ASD-PL-0007, section 3.2.5.
+    See S1-IF-ASD-PL-0007 and S1CD-IF-ASD-IF01-0005, section 3.2.5.
     """
-
-    error_flag: bool = False
-    baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.BYPASS)
-    baq_block_length: T["u8"] = 0
-    # n. 8 bits padding
-    range_decimation: ERangeDecimation = bpack.field(
-        size=8, offset=24, default=0
-    )
-    rx_gain: T["u8"] = 0
-    tx_ramp_rate: T["u16"] = 0
-    tx_pulse_start_freq: T["u16"] = 0
-    tx_pulse_length: T["u24"] = 0
-    # n. 3 bits pad
-    rank: T["u5"] = bpack.field(offset=99, default=0)
-    pri: T["u24"] = 0
-    swst: T["u24"] = 0
-    swl: T["u24"] = 0
-    sas: SasData = bpack.field(default_factory=SasData)
-    ses: SesData = bpack.field(default_factory=SesData)
 
     def get_baq_block_len_samples(self) -> int:
         """Length of the BAQ data block (S1-IF-ASD-PL-0007, section 3.2.5.3).
@@ -545,6 +582,66 @@ class RadarConfigurationSupportService:
 
 
 @bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class RadarConfigurationSupportServiceS1AB(
+    _RadarConfigurationSupportServiceMixin
+):
+    """Radar Configuration Support Service.
+
+    See S1-IF-ASD-PL-0007, section 3.2.5.
+    """
+
+    error_flag: bool = False
+    baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.BYPASS)
+    baq_block_length: T["u8"] = 0
+    # n. 8 bits padding
+    range_decimation: ERangeDecimation = bpack.field(
+        size=8, offset=24, default=0
+    )
+    rx_gain: T["u8"] = 0
+    tx_ramp_rate: T["u16"] = 0
+    tx_pulse_start_freq: T["u16"] = 0
+    tx_pulse_length: T["u24"] = 0
+    # n. 3 bits pad
+    rank: T["u5"] = bpack.field(offset=99, default=0)
+    pri: T["u24"] = 0
+    swst: T["u24"] = 0
+    swl: T["u24"] = 0
+    sas: SasDataS1AB = bpack.field(default_factory=SasDataS1AB)
+    ses: SesDataS1AB = bpack.field(default_factory=SesDataS1AB)
+
+
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class RadarConfigurationSupportServiceS1CD(
+    _RadarConfigurationSupportServiceMixin
+):
+    """Radar Configuration Support Service.
+
+    See S1CD-IF-ASD-IF01-0005, section 3.2.5.
+    """
+
+    error_flag: bool = False
+    baq_mode: EBaqMode = bpack.field(size=5, offset=3, default=EBaqMode.BYPASS)
+    baq_block_length: T["u8"] = 0
+    # n. 8 bits padding
+    range_decimation: ERangeDecimation = bpack.field(
+        size=8, offset=24, default=0
+    )
+    rx_gain: T["u8"] = 0
+    tx_ramp_rate: T["u16"] = 0
+    tx_pulse_start_freq: T["u16"] = 0
+    tx_pulse_length: T["u24"] = 0
+    # n. 3 bits pad
+    rank: T["u5"] = bpack.field(offset=99, default=0)
+    pri: T["u24"] = 0
+    swst: T["u24"] = 0
+    swl: T["u24"] = 0
+    sas: SasDataS1CD = bpack.field(default_factory=SasDataS1CD)
+    ses: SesDataS1CD = bpack.field(default_factory=SesDataS1CD)
+
+
+@bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE, size=24)
 class RadarSampleCountService:
     """Radar Sample Count Service (S1-IF-ASD-PL-0007, section 3.2.6)."""
@@ -555,15 +652,29 @@ class RadarSampleCountService:
 
 @bpack.bs.decoder
 @bpack.descriptor(baseunits=BITS, byteorder=BE)
-class SecondaryHeader:
+class SecondaryHeaderS1AB:
     """Packet Secondary Header (S1-IF-ASD-PL-0007, section 3.2)."""
 
     datation: DatationService
     fixed_ancillary_data: FixedAncillaryDataService
     subcom_ancillary_data: SubCommutatedAncillaryDataService
     counters: CountersService
-    radar_configuration_support: RadarConfigurationSupportService
+    radar_configuration_support: RadarConfigurationSupportServiceS1AB
     radar_sample_count: RadarSampleCountService
 
 
-assert bpack.calcsize(SecondaryHeader, bpack.EBaseUnits.BYTES) == SHSIZE
+@bpack.bs.decoder
+@bpack.descriptor(baseunits=BITS, byteorder=BE)
+class SecondaryHeaderS1CD:
+    """Packet Secondary Header (S1CD-IF-ASD-IF01-0005, section 3.2)."""
+
+    datation: DatationService
+    fixed_ancillary_data: FixedAncillaryDataService
+    subcom_ancillary_data: SubCommutatedAncillaryDataService
+    counters: CountersService
+    radar_configuration_support: RadarConfigurationSupportServiceS1CD
+    radar_sample_count: RadarSampleCountService
+
+
+assert bpack.calcsize(SecondaryHeaderS1AB, bpack.EBaseUnits.BYTES) == SHSIZE
+assert bpack.calcsize(SecondaryHeaderS1CD, bpack.EBaseUnits.BYTES) == SHSIZE

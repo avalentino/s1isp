@@ -224,3 +224,6 @@ length-sort = true
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"  # Accepts: "google", "numpy", or "pep257".
+
+[tool.ruff.lint.mccabe]
+max-complexity = 13
