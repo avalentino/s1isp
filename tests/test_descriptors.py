@@ -5,16 +5,16 @@ from fractions import Fraction
 import pytest
 from numpy import testing as npt
 
-from s1isp.enums import ESignalType
+from s1isp.enums import ESignalTypeS1AB as ESignalType
 from s1isp.constants import PRIMARY_HEADER_SIZE as PHSIZE
 from s1isp.constants import SECONDARY_HEADER_SIZE as SHSIZE
 from s1isp.descriptors import (
     SasCalData,
     SasImgData,
     PrimaryHeader,
-    SecondaryHeader,
     RangeDecimationInfo,
 )
+from s1isp.descriptors import SecondaryHeaderS1AB as SecondaryHeader
 
 
 def test_txcal(txcal_data, txcal_ref_data):

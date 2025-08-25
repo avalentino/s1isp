@@ -142,7 +142,7 @@ class ESasTestMode(enum.IntEnum):
     NOMINAL_CAL_MODE = 1
 
 
-class ECalType(enum.IntEnum):
+class ECalTypeS1AB(enum.IntEnum):
     """SAS Calibration Type (S1-IF-ASD-PL-0007, section 3.2.5.13.2.4)."""
 
     TX_CAL = 0
@@ -155,6 +155,20 @@ class ECalType(enum.IntEnum):
     TXH_CAL_ISO = 7
 
 
+class ECalTypeS1CD(enum.IntEnum):
+    """SAS Calibration Type (S1CD-IF-ASD-IF01-0005, section 3.2.5.13.2.4)."""
+
+    TX_CAL = 0
+    RX_CAL = 1
+    EPDN_CAL = 2
+    TX_CAL_ISO = 3
+    # TA_CAL = 3
+    # APDN_CAL = 4
+    # _NOT_APPLICABLE_5 = 5
+    # _NOT_APPLICABLE_6 = 6
+    # TXH_CAL_ISO = 7
+
+
 class ECalMode(enum.IntEnum):
     """SES Calibration Mode (S1-IF-ASD-PL-0007, section 3.2.5.14.1)."""
 
@@ -164,17 +178,37 @@ class ECalMode(enum.IntEnum):
     RF672_PHASE_CODED_CHARACTERIZATION = 3
 
 
-class ESignalType(enum.IntEnum):
-    """SES Signal Type (S1-IF-ASD-PL-0007, section 3.2.5.14.3)."""
+class ESignalTypeS1AB(enum.IntEnum):
+    """SES Signal Type.
+
+    See S1-IF-ASD-PL-0007, section 3.2.5.14.3.
+    """
 
     ECHO = 0
     NOISE = 1
     TX_CAL = 8
     RX_CAL = 9
     EPDN_CAL = 10
-    TA_CAL = 11  # NOTE: TXH_CAL_ISO for S1C and S1D
-    APDN_CAL = 12
-    TXH_CAL_ISO = 15
+    TA_CAL = 11  # NOTE: 11 corresponds to TX_CAL_ISO for S1C and S1D
+    APDN_CAL = 12  # NOTE: only valid for Sentinel-1A and Sentinel-1B
+    TXH_CAL_ISO = 15  # NOTE: this has a different value (11) for S1C and S1D
+
+
+class ESignalTypeS1CD(enum.IntEnum):
+    """SES Signal Type.
+
+    See S1CD-IF-ASD-IF01-0005, section 3.2.5.14.3.
+    """
+
+    ECHO = 0
+    NOISE = 1
+    TX_CAL = 8
+    RX_CAL = 9
+    EPDN_CAL = 10
+    TX_CAL_ISO = 11  # NOTE: 11 corresponds to TA_CAL for S1A and S1B
+
+
+ESignalType = ESignalTypeS1CD  # TODO: remove
 
 
 class EBrcCode(enum.IntEnum):
