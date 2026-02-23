@@ -162,8 +162,8 @@ class ECalTypeS1CD(enum.IntEnum):
     RX_CAL = 1
     EPDN_CAL = 2
     TX_CAL_ISO = 3
-    # TA_CAL = 3
-    # APDN_CAL = 4
+    # TA_CAL = 3  # legacy S1AB name
+    APDN_CAL = 4  # observed in S1C raw products
     # _NOT_APPLICABLE_5 = 5
     # _NOT_APPLICABLE_6 = 6
     # TXH_CAL_ISO = 7
