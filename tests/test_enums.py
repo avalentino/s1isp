@@ -1,6 +1,16 @@
 """Tests for enum definitions."""
 
-from s1isp.enums import ECalTypeS1CD
+from s1isp.enums import ECalTypeS1AB, ECalTypeS1CD
+
+
+def test_cal_type_s1ab_values():
+    """Ensure S1AB calibration type code up to 7 are accepted."""
+    for idx in range(8):
+        assert ECalTypeS1AB(idx) == idx
+
+    # not applicable
+    for idx in range(5, 7):
+        assert ECalTypeS1AB(idx).name.startswith("_NOT_APPLICABLE")
 
 
 def test_cal_type_s1cd_values():
