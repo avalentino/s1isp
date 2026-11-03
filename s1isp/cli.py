@@ -60,7 +60,7 @@ def dump_records(
         else:
             raise FileExistsError(f"File already exists: {outfile}")
 
-    _log.info("Start decoding: %(filename)r ...", filename)
+    _log.info("Start decoding: %r ...", filename)
     t0 = datetime.datetime.now()
 
     records, offsets, subcomm_data_records = decode_stream(
