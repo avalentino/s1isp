@@ -46,6 +46,29 @@ Changelog = "https://github.com/avalentino/s1isp/blob/main/docs/NEWS.rst"
 Issues = "https://github.com/avalentino/s1isp/issues"
 
 
+[dependency-groups]
+docs = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-spelling",
+]
+test = ["pytest", "pytest-doctestplus"]
+coverage = ["pytest-cov", "coverage[toml]", {include-group = "test"}]
+lint = ["flake8", "pydocstyle", "isort", "black", "ruff", "mypy", "codespell"]
+dev = [
+    "python-build",
+    "twine",
+    "setuptools >=77.0.3",
+    "cython >=3",
+    "numpy >=2",
+    "tox",
+    {include-group = "docs"},
+    {include-group = "test"},
+    {include-group = "coverage"},
+    {include-group = "lint"},
+]
+
+
 [tool.setuptools]
 packages = ["s1isp"]
 
