@@ -36,7 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build twine
 
-      - name: Build package
+      - name: Build the package
         run: |
           python -m build
           python -m twine check dist/*
