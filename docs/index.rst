@@ -1,3 +1,7 @@
+.. SPDX-FileCopyrightText: 2022-2026 Antonio Valentino
+..
+.. SPDX-License-Identifier: Apache-2.0
+
 .. s1isp documentation master file, created by
    sphinx-quickstart on Tue Dec 12 18:57:00 2023.
    You can adapt this file completely to your liking, but it should at least

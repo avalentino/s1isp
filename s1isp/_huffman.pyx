@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022-2026 Antonio Valentino
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # cython: language_level=3, boundscheck=False
 
 """Extension module for Huffman decoding of Sentinel-1 RAW data."""

@@ -1,3 +1,7 @@
+.. SPDX-FileCopyrightText: 2022-2026 Antonio Valentino
+..
+.. SPDX-License-Identifier: Apache-2.0
+
 Features
 ========
 

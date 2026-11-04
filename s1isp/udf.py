@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022-2026 Antonio Valentino
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Tools and functions for user data field decoding.
 
 The specification of algorithms for the user data field decoding is

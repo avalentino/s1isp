@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022-2026 Antonio Valentino
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Enum types for Sentinel-1 RAW data decoding.
 
 Enumerations defined in the "Sentinel-1 SAR Space Packet Protocol Data Unit"
