@@ -24,6 +24,10 @@ doctests = true
 # - I  # flake8-import-order: not compatible with isort
 # - SC  # flake8-spellcheck: too aggressive
 # - CNL  # flake8-class-newline: incompatible with black
+# - JS  # flake8-multiline-containers: not compatible with ruff preview
+# - ANN  # flake8-annotations: too aggressive
+# - C  # flake8-commas: too aggressive
+# - PT  # flake8-pytest-style: test suite compatible with unittest
 # extend-ignore = E203,W503,D105,D107,SC,CNL  # D* are also in pyproject.toml
 extend-ignore = E203,W503,D105,SC,ANN,C812,CF,E800,FNE,G,NIC002,PL,PT028,RST304,S403,S101,SIM114,TYP,VNE,I
 extend-select = W504
@@ -33,7 +37,7 @@ per-file-ignores =
     bench/*.py: D
     docs/conf.py: D
     s1isp/cli.py: NQA102
-    s1isp/decoder.py: CCR001,TC003,R504
+    s1isp/decoder.py: CCR001,TC003,R504,BLK100
     s1isp/descriptors.py: F821,TC002
     s1isp/l0index.py: F821
     tests/test_luts.py: D,CCR001

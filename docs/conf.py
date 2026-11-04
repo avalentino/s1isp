@@ -92,6 +92,8 @@ html_last_updated_fmt = ""
 
 
 # -- Options for LaTeX output ------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-latex-output
+
 latex_documents = [
     # (startdocname, targetname, title, author, theme, toctree_only)
     (
@@ -146,6 +148,7 @@ intersphinx_mapping = {
 
 
 # -- Options for extlinks extension ------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html#module-sphinx.ext.extlinks
 
 extlinks = {
     "issue": ("https://github.com/avalentino/s1isp/issues/%s", "gh-%s"),

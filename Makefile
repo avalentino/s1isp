@@ -42,7 +42,7 @@ clean:
 	$(RM) -r *.*-info build
 	find . -name __pycache__ -type d -exec $(RM) -r {} +
 	# $(RM) -r __pycache__ */__pycache__ */*/__pycache__ */*/*/__pycache__
-	$(RM) $(TARGET)/_*.c $(TARGET)/*.so $(TARGET)/*.o
+	$(RM) $(TARGET)/_*.c $(TARGET)/_*.cpp $(TARGET)/*.so $(TARGET)/*.o
 	if [ -f docs/Makefile ] ; then $(MAKE) -C docs clean; fi
 	$(RM) -r docs/_build
 
@@ -53,6 +53,7 @@ cleaner: clean
 	$(RM) -r .mypy_cache
 	$(RM) -r .ruff_cache
 	$(RM) -r .ipynb_checkpoints
+	$(RM) -r .hypothesis
 
 distclean: cleaner
 	$(RM) -r dist
@@ -64,12 +65,13 @@ lint:
 	$(PYTHON) -m black --check $(TARGET) tests
 	# $(PYTHON) -m fawltydeps
 	# $(PYTHON) -m mypy --check-untyped-defs --ignore-missing-imports $(TARGET)
-	ruff check $(TARGET)
+	ruff check $(TARGET) # tests
 	codespell
 
 docs: ext
 	mkdir -p docs/_static
 	$(MAKE) -C docs PYTHONPATH=.. html
+	$(MAKE) -C docs PYTHONPATH=.. doctest
 	$(MAKE) -C docs PYTHONPATH=.. linkcheck
 	$(MAKE) -C docs PYTHONPATH=.. spelling
 

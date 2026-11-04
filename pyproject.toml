@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77.0.0", "Cython", "numpy"]
+requires = ["setuptools>=77.0.3", "Cython", "numpy"]
 build-backend = "setuptools.build_meta"
 
 
@@ -19,6 +19,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Free Threading :: 2 - Beta",
     "Topic :: Scientific/Engineering",
     "Topic :: Utilities",
 ]
@@ -71,7 +72,6 @@ line-length = 79
 preview = true
 enable-unstable-feature = [
     "hug_parens_with_braces_and_square_brackets",
-    # "multiline_string_handling",
     "string_processing",
     "wrap_long_dict_values_in_parens",
 ]
@@ -97,7 +97,8 @@ known_first_party = ["s1isp"]
 convention = "numpy"
 add-ignore = ["D105"]
 # add-ignore = ["D105", "D107"]
-match='(?!(test_|conf)).*\.py'
+match="(?!(test_|conf)).*\\.py"
+match-dir="(?!(tests|docs))"
 
 
 [tool.codespell]
@@ -120,8 +121,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 preview = true
-select = [
-    # ruff --version  # ruff 0.11.6
+extend-select = [
+    # ruff --version  # ruff 0.16.3
+    # ruff linter
     "E",        #  E/W pycodestyle
     "W",        #  E/W pycodestyle
     "F",        #    F Pyflakes
@@ -216,6 +218,7 @@ docstring-code-format = true
 
 [tool.ruff.lint.isort]
 length-sort = true
+known-first-party = ["s1isp"]
 
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
