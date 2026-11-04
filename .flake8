@@ -1,4 +1,5 @@
 [flake8]
+min-python-version = 3.11
 # max_line_length = 79
 # max-complexity = 10
 doctests = true
