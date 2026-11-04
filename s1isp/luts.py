@@ -23,7 +23,7 @@ class RangeDecimationInfo:
 
     @property
     def sampling_frequency(self) -> float:
-        """Return the sampling frequency in Hz."""
+        """The sampling frequency in Hz."""
         return self.decimation_ratio * 4 * REF_FREQ * 1e6
 
 

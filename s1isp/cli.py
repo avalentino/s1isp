@@ -6,10 +6,10 @@ import pickle
 import logging
 import pathlib
 import argparse
-import datetime
+import datetime as dt
 
 from . import __version__
-from .decoder import decode_stream, decoded_stream_to_dict, EUdfDecodingMode
+from .decoder import EUdfDecodingMode, decode_stream, decoded_stream_to_dict
 
 try:
     from os import EX_OK
@@ -61,7 +61,7 @@ def dump_records(
             raise FileExistsError(f"File already exists: {outfile}")
 
     _log.info("Start decoding: %r ...", filename)
-    t0 = datetime.datetime.now()
+    t0 = dt.datetime.now()
 
     records, offsets, subcomm_data_records = decode_stream(
         filename,
@@ -70,7 +70,7 @@ def dump_records(
         bytes_offset=bytes_offset,
         udf_decoding_mode=udf_decoding_mode,
     )
-    elapsed = datetime.datetime.now() - t0
+    elapsed = dt.datetime.now() - t0
     _log.info("Decoding complete (elapsed time %s).", elapsed)
 
     if output_format == EOutputFormat.PICKLE:
@@ -86,22 +86,22 @@ def dump_records(
     else:
         import pandas as pd
 
-        t0 = datetime.datetime.now()
+        t0 = dt.datetime.now()
         _log.info("Convert data to dict ...")
         records = decoded_stream_to_dict(records, enum_value=enum_value)
-        elapsed = datetime.datetime.now() - t0
+        elapsed = dt.datetime.now() - t0
         _log.info("Conversion to dict completed (elapsed time: %s).", elapsed)
 
-        t0 = datetime.datetime.now()
+        t0 = dt.datetime.now()
         _log.info("Convert data to DataFrame ...")
         df = pd.DataFrame(records)
-        elapsed = datetime.datetime.now() - t0
+        elapsed = dt.datetime.now() - t0
         _log.info(
             "Conversion to DataFrame completed (elapsed time: %s).",
             elapsed,
         )
 
-        t0 = datetime.datetime.now()
+        t0 = dt.datetime.now()
         _log.info("Writing data to %s ...", output_format.name)
 
         if output_format == EOutputFormat.CSV:
@@ -113,7 +113,7 @@ def dump_records(
         else:
             raise ValueError(f"Unknown output format '{output_format}'")
 
-        elapsed = datetime.datetime.now() - t0
+        elapsed = dt.datetime.now() - t0
         _log.info("Data written to %s (elapsed time: %s).", outfile, elapsed)
 
 
@@ -288,7 +288,7 @@ def main(*argv):
     logging.captureWarnings(True)
 
     # parse cmd line arguments
-    args = parse_args(argv if argv else None)
+    args = parse_args(argv or None)
 
     # execute main tasks
     exit_code = EX_OK

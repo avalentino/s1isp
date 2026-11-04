@@ -2,6 +2,7 @@
 
 import io
 import enum
+import types
 import logging
 import pathlib
 from typing import NamedTuple
@@ -14,22 +15,22 @@ from .constants import SYNC_MARKER
 from .constants import PRIMARY_HEADER_SIZE as PHSIZE
 from .constants import SECONDARY_HEADER_SIZE as SHSIZE
 from .descriptors import (
-    PVTAncillaryData,
     PrimaryHeader,
     SyncMarkerError,
-    AttitudeAncillaryData,
+    PVTAncillaryData,
     SecondaryHeaderS1AB,
     SecondaryHeaderS1CD,
+    AttitudeAncillaryData,
     HKTemperatureAncillaryData,
     SubCommutatedAncillaryDataService,
 )
 
 __all__ = [
-    "isp_to_dict",
-    "decode_stream",
-    "decoded_subcomm_to_dict",
-    "decoded_stream_to_dict",
     "SubCommutatedDataDecoder",
+    "decode_stream",
+    "decoded_stream_to_dict",
+    "decoded_subcomm_to_dict",
+    "isp_to_dict",
 ]
 
 
@@ -68,11 +69,11 @@ class SubcomRecordInfo:
 
 
 class CycleHandler:
-    record_info = {
+    record_info = types.MappingProxyType({
         "pvt": SubcomRecordInfo(PVTAncillaryData, 1),
         "att": SubcomRecordInfo(AttitudeAncillaryData, 23),
         "hk": SubcomRecordInfo(HKTemperatureAncillaryData, 42),
-    }
+    })
 
     def __init__(self):
         self.data: list[SubCommutatedAncillaryDataService] = []
@@ -168,9 +169,7 @@ class SubCommutatedDataDecoder:
             prev_sc_data = self._current_cycle_handler.data[-1]
             prev_word_index = prev_sc_data.data_word_index
             step = data_word_index - prev_word_index
-            if step < 0:
-                self._new_cycle()
-            elif (
+            if step < 0 or (
                 self._packet_count is not None
                 and packet_count - self._packet_count > 1
             ):

@@ -1,19 +1,20 @@
 """Tests for ISP user data field decoding."""
 
 import numpy as np
+import pytest
 import bitstruct as bs
 
-from s1isp.udf import align_quads, bypass_decode, huffman_decode, decode_ud
+from s1isp.udf import decode_ud, align_quads, bypass_decode, huffman_decode
 from s1isp.enums import ESignalTypeS1AB as ESignalType
 from s1isp.constants import PRIMARY_HEADER_SIZE as PHSIZE
 from s1isp.constants import SECONDARY_HEADER_SIZE as SHSIZE
 from s1isp.descriptors import SecondaryHeaderS1AB as SecondaryHeader
 
-from .test_huffman import get_huffman_data, BRC, HCODE_LUTS, HUFFMAN_CODES
+from .test_huffman import BRC, HCODE_LUTS, HUFFMAN_CODES, get_huffman_data
 from .test_huffman import NSAMPLES as BLOCKSIZE
 
 
-def make_quats(nq: int = 100):
+def make_quats(nq: int):
     n_cpx_samples = 2 * nq
     n_flt_smaples = 2 * n_cpx_samples
     fdata = np.arange(n_flt_smaples, dtype=np.float32)
@@ -27,13 +28,15 @@ def make_quats(nq: int = 100):
     return cdata, ie, io, qe, qo
 
 
-def test_align_quads(nq: int = 100):
+@pytest.mark.parametrize("nq", [100])
+def test_align_quads(nq: int):
     cdata, ie, io, qe, qo = make_quats(nq)
     out = align_quads(ie, io, qe, qo)
     np.testing.assert_array_equal(out, cdata)
 
 
-def test_align_quads_nq(nq: int = 100):
+@pytest.mark.parametrize("nq", [100])
+def test_align_quads_nq(nq: int):
     cdata, ie, io, qe, qo = make_quats(nq)
 
     out = align_quads(ie, io, qe, qo, nq)
@@ -43,7 +46,8 @@ def test_align_quads_nq(nq: int = 100):
     np.testing.assert_array_equal(out, cdata[: cdata.size // 2])
 
 
-def test_align_quads_out(nq: int = 100):
+@pytest.mark.parametrize("nq", [100])
+def test_align_quads_out(nq: int):
     cdata, ie, io, qe, qo = make_quats(nq)
 
     buf = np.zeros_like(cdata)
@@ -53,7 +57,8 @@ def test_align_quads_out(nq: int = 100):
     assert out is buf
 
 
-def make_bypass(nbits: int = 10):
+@pytest.mark.parametrize("nbits", [10])
+def make_bypass(nbits: int):
     n_flt_smaples = 2**10
     nq = n_flt_smaples // 4
 
@@ -80,13 +85,15 @@ def make_bypass(nbits: int = 10):
     return cdata, data, nq
 
 
-def test_bypass_decode(nbits=10):
+@pytest.mark.parametrize("nbits", [10])
+def test_bypass_decode(nbits: int):
     cdata, data, nq = make_bypass(nbits)
     out = bypass_decode(data, nq)
     np.testing.assert_array_equal(out, cdata)
 
 
-def test_bypass_decode_out(nbits=10):
+@pytest.mark.parametrize("nbits", [10])
+def test_bypass_decode_out(nbits):
     cdata, data, nq = make_bypass(nbits)
     buf = np.zeros_like(cdata)
     out = bypass_decode(data, nq, out=buf)
@@ -96,7 +103,7 @@ def test_bypass_decode_out(nbits=10):
 
 
 def get_fdbaq_channel(
-    blocksize: int = BLOCKSIZE, samples: int = None, header=False
+    blocksize: int = BLOCKSIZE, samples: int | None = None, header=False
 ):
     nblocks = len(HUFFMAN_CODES)
     if samples is None:
@@ -150,7 +157,8 @@ def get_fdbaq_stream(blocksize):
     return bits, [ie_values, io_values, qe_values, qo_values], brcs, thidx
 
 
-def test_huffman_decode(blocksize=BLOCKSIZE):
+@pytest.mark.parametrize("blocksize", [BLOCKSIZE])
+def test_huffman_decode(blocksize: int):
     bits, values, brcs, thidx = get_fdbaq_stream(blocksize)
     ie_values, io_values, qe_values, qo_values = values
     assert len(ie_values) == len(io_values) == len(qe_values) == len(qo_values)

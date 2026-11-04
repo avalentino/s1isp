@@ -11,10 +11,10 @@ import bpack.bs
 from bpack import T
 
 from .luts import (
+    RangeDecimationInfo,
     lookup_d_value,
     lookup_filter_output_offset,
     lookup_range_decimation_info,
-    RangeDecimationInfo,
 )
 from .enums import (
     EBaqMode,
