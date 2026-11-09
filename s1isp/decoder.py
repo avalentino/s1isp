@@ -225,7 +225,7 @@ class EUdfDecodingMode(enum.Enum):
 def decode_stream(
     filename,
     skip: int | None = None,
-    maxcount: int | None = None,
+    max_count: int | None = None,
     bytes_offset: int = 0,
     udf_decoding_mode: EUdfDecodingMode = EUdfDecodingMode.NONE,
     platform_id: str | None = None,
@@ -237,7 +237,7 @@ def decode_stream(
     :param skip: int, optional
         number of ISPs to skip (starting form `byte_offset`).
         Default: 0.
-    :param maxcount: int, optional
+    :param max_count: int, optional
         maximum number of ISPs to decode (starting form `skip`).
         Default: all remaining ISPs in the file.
     :param byte_offset: int, optional
@@ -289,7 +289,7 @@ def decode_stream(
 
             # primary header
             data = fd.read(PHSIZE)
-            if len(data) == 0 or (maxcount and len(records) >= maxcount):
+            if len(data) == 0 or (max_count and len(records) >= max_count):
                 break
 
             # type - PrimaryHeader

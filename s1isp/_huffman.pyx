@@ -52,7 +52,7 @@ def decode(
         number of samples expected in output
     :param brc: int
         BRC code. Each BRC code has an associated binary tree for decoding.
-        Possible valuea are in the range [0 ... 4].
+        Possible values are in the range [0 ... 4].
     :param out: (optional) output array of uint8
         if provided the the decoded data are stored in the 'out' array.
     :param count: bool
@@ -61,8 +61,8 @@ def decode(
     :returns:
         the Huffman decoded data.
 
-        If the `count` flag is set to True thean also the number of
-        consuumed bits is returned:
+        If the `count` flag is set to True then also the number of
+        consumed bits is returned:
 
           decode(...) -> data, count
     """
@@ -95,7 +95,7 @@ def decode(
             idx = huffman_brc4(nbits, &data[0], nsamples, &out[0])
     if idx < 0:
         raise HuffmanDecodingError(
-            f"Not enaough data to decode the requested samples ({nsamples})."
+            f"Not enough data to decode the requested samples ({nsamples})."
         )
 
     if count:

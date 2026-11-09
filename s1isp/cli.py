@@ -70,7 +70,7 @@ def dump_records(
     records, offsets, subcomm_data_records = decode_stream(
         filename,
         skip=skip,
-        maxcount=maxcount,
+        max_count=maxcount,
         bytes_offset=bytes_offset,
         udf_decoding_mode=udf_decoding_mode,
     )

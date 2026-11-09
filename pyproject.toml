@@ -125,9 +125,18 @@ match-dir="(?!(tests|docs))"
 
 
 [tool.codespell]
-skip = "*.pdf,*.pp,*.ipynb,./htmlcov,./docs/spelling_wordlist.txt,./data"
 count = true
 quiet-level = 3
+skip = [
+    "./docs/_build",
+    "./docs/spelling_wordlist.txt",
+    "./htmlcov",
+    "./data",
+    "*.pdf",
+    # "*.pp",
+    "*.ipynb",
+    "./s1isp?_huffman.c"
+]
 ignore-words-list = "nd"
 
 
