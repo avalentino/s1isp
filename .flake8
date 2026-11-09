@@ -41,6 +41,7 @@ per-file-ignores =
     s1isp/descriptors.py: F821,TC002
     s1isp/l0index.py: F821
     tests/test_luts.py: D,CCR001
+    tests/test_decoder.py: D,BLK100
 statistics = True
 count = True
 extend-exclude = notebooks

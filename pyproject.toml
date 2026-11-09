@@ -52,7 +52,7 @@ docs = [
     "sphinx_rtd_theme",
     "sphinxcontrib-spelling",
 ]
-test = ["pytest", "pytest-doctestplus"]
+test = ["pytest", "pytest-doctestplus", "fsspec"]
 coverage = ["pytest-cov", "coverage[toml]", {include-group = "test"}]
 lint = ["flake8", "pydocstyle", "isort", "black", "ruff", "mypy", "codespell"]
 dev = [
