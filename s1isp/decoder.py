@@ -5,10 +5,12 @@
 """Sentinel-1 RAW data decoder."""
 
 import io
+import os
 import enum
 import types
 import logging
 import pathlib
+import contextlib
 from typing import NamedTuple
 from collections.abc import Sequence
 
@@ -222,8 +224,41 @@ class EUdfDecodingMode(enum.Enum):
         return self.value
 
 
+def open_fd_context(
+    file_or_path: str | os.PathLike[str] | io.IOBase,
+) -> io.IOBase:
+    """Return an open file descriptor that can be used as context manager.
+
+    If the input is an already open file descriptor, it is wrapped into a
+    :func:`contextlib.nullcontext` leaving the responsibility
+    of closing the object to the caller.
+
+    If the input is a string or a path-like object, than the file is opened
+    and the resulting file descriptor is returned.
+
+    In this case, if the descriptor is used as a context manager,
+    the file will be closed upon exiting the context.
+    """
+    if isinstance(file_or_path, (str, pathlib.Path)):
+        # if string, open file
+        return open(file_or_path, mode="rb")
+    else:
+        # caller is responsible for closing file
+        return contextlib.nullcontext(file_or_path)
+
+
+def _get_file_name(file_or_path: str | os.PathLike[str] | io.IOBase) -> str:
+    if isinstance(file_or_path, (str, pathlib.Path)):
+        return pathlib.Path(file_or_path).name
+    if hasattr(file_or_path, "name"):
+        return file_or_path.name
+    if hasattr(file_or_path, "name"):
+        return file_or_path.path
+    raise ValueError(f"unable to retrieve the file name from {file_or_path}")
+
+
 def decode_stream(
-    filename,
+    input_file: str | os.PathLike[str] | io.IOBase,
     skip: int | None = None,
     max_count: int | None = None,
     bytes_offset: int = 0,
@@ -232,8 +267,10 @@ def decode_stream(
 ) -> tuple[list[DecodedDataItem], list[int], list[SubCommItem]]:
     """Decode packet headers.
 
-    :param filename:
-        path to the L0 data component file.
+    :param input_file:
+        input ISP stream. It can be a path (str or pathlib.Path) to one of
+        the L0 data component files or an open file like object (both local
+        or fsspec object are supported).
     :param skip: int, optional
         number of ISPs to skip (starting form `byte_offset`).
         Default: 0.
@@ -261,24 +298,25 @@ def decode_stream(
     else:
         decode_ud = None
 
-    SecondaryHeader: SecondaryHeaderS1AB | SecondaryHeaderS1CD  # noqa: N806
-    if platform_id is None:
-        platform_id = pathlib.Path(filename).name[:3].upper()
+    packet_counter: int = 0
+    records: list[DecodedDataItem] = []
+    subcom_data_records: list[SubCommItem] = []
+    offsets: list[int] = []
+    pbar = tqdm.tqdm(unit=" packets", desc="decoded")
+    with open_fd_context(input_file) as fd, pbar:
+        if platform_id is None:
+            filename = _get_file_name(input_file)
+            platform_id = pathlib.Path(filename).name[:3].upper()
         if platform_id in {"S1A", "S1B"}:
             SecondaryHeader = SecondaryHeaderS1AB  # noqa: N806
         elif platform_id in {"S1C", "S1D"}:
             SecondaryHeader = SecondaryHeaderS1CD  # noqa: N806
         else:
             raise ValueError(
-                f"unable to determine the 'platform_id' for '{filename}'"
+                f"unable to determine the 'platform_id' for '{input_file}'. "
+                "Please pass 'platform_id' parameter explicitly."
             )
 
-    packet_counter: int = 0
-    records: list[DecodedDataItem] = []
-    subcom_data_records: list[SubCommItem] = []
-    offsets: list[int] = []
-    pbar = tqdm.tqdm(unit=" packets", desc="decoded")
-    with open(filename, "rb") as fd, pbar:
         if bytes_offset:
             assert bytes_offset >= 0
             fd.seek(bytes_offset)
