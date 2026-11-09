@@ -79,13 +79,12 @@ version = {attr = "s1isp.__version__"}
 
 [tool.cibuildwheel]
 skip = "pp*"
-test-requires = "pytest"
+test-groups = ["test"]
 test-command = "pytest -v {project}/tests"
 
 
 [tool.pytest.ini_options]
 addopts = [
-    # "--ignore=examples/",
     "--import-mode=importlib",
 ]
 
@@ -98,8 +97,7 @@ enable-unstable-feature = [
     "string_processing",
     "wrap_long_dict_values_in_parens",
 ]
-# target-version = ['py311']
-# extend-exclude = "packagename/parse/*"
+target-version = ['py311']
 
 
 [tool.isort]
@@ -110,16 +108,12 @@ no_inline_sort = true
 include_trailing_comma = true
 use_parentheses = true
 line_length = 79
-# force_grid_wrap = 0
-# ensure_newline_before_comments = true
 known_first_party = ["s1isp"]
-# skip_glob = ["packagename/parse/*"]
 
 
 [tool.pydocstyle]
 convention = "numpy"
 add-ignore = ["D105"]
-# add-ignore = ["D105", "D107"]
 match="(?!(test_|conf)).*\\.py"
 match-dir="(?!(tests|docs))"
 
@@ -133,7 +127,7 @@ skip = [
     "./htmlcov",
     "./data",
     "*.pdf",
-    # "*.pp",
+    "*.pp",
     "*.ipynb",
     "./s1isp?_huffman.c"
 ]
@@ -141,14 +135,12 @@ ignore-words-list = "nd"
 
 
 # [tool.mypy]
-# plugins = ["numpy.typing.mypy_plugin"]. # deprecated
+# exclude = ["^docs/conf\\.py$"]
 
 
 [tool.ruff]
 line-length = 79
-# indent-width = 4
 target-version = "py311"
-# extend-exclude = ["packagename/parse/*"]
 
 
 [tool.ruff.lint]
