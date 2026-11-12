@@ -307,10 +307,12 @@ def decode_stream(
         if platform_id is None:
             filename = _get_file_name(input_file)
             platform_id = pathlib.Path(filename).name[:3].upper()
-        if platform_id in {"S1A", "S1B"}:
-            SecondaryHeader = SecondaryHeaderS1AB  # noqa: N806
-        elif platform_id in {"S1C", "S1D"}:
-            SecondaryHeader = SecondaryHeaderS1CD  # noqa: N806
+
+        secondary_header_class: type[SecondaryHeaderS1AB | SecondaryHeaderS1CD]
+        if platform_id.upper() in {"S1A", "S1B"}:
+            secondary_header_class = SecondaryHeaderS1AB
+        elif platform_id.upper() in {"S1C", "S1D"}:
+            secondary_header_class = SecondaryHeaderS1CD
         else:
             raise ValueError(
                 f"unable to determine the 'platform_id' for '{input_file}'. "
@@ -354,7 +356,7 @@ def decode_stream(
             data = fd.read(SHSIZE)
 
             # type - SecondaryHeader
-            secondary_header = SecondaryHeader.frombytes(data[:SHSIZE])
+            secondary_header = secondary_header_class.frombytes(data[:SHSIZE])
 
             # -- Datation Service
             # ds = secondary_header.datation
