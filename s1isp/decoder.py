@@ -9,6 +9,7 @@ import os
 import enum
 import types
 import logging
+import numbers
 import pathlib
 import contextlib
 from typing import NamedTuple
@@ -48,7 +49,7 @@ _log = logging.getLogger(__name__)
 class DecodedDataItem(NamedTuple):
     primary_header: PrimaryHeader
     secondary_header: SecondaryHeaderS1AB | SecondaryHeaderS1CD
-    udf: bytes | Sequence[float] | None = None
+    udf: bytes | Sequence[numbers.Real | numbers.Complex] | None = None
 
 
 class SubCommItem(NamedTuple):
