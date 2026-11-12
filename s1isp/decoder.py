@@ -252,7 +252,7 @@ def _get_file_name(file_or_path: str | os.PathLike[str] | io.IOBase) -> str:
         return pathlib.Path(file_or_path).name
     if hasattr(file_or_path, "name"):
         return file_or_path.name
-    if hasattr(file_or_path, "name"):
+    if hasattr(file_or_path, "path"):
         return file_or_path.path
     raise ValueError(f"unable to retrieve the file name from {file_or_path}")
 
